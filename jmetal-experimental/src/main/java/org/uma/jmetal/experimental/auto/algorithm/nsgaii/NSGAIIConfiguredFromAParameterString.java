@@ -15,29 +15,13 @@ import org.uma.jmetal.util.observer.impl.RunTimeChartObserver;
 public class NSGAIIConfiguredFromAParameterString {
 
   public static void main(String[] args) {
-    String referenceFrontFileName = "LSMOP12D.csv" ;
+    String referenceFrontFileName = "DTLZ2.2D.csv" ;
 
     String[] parameters =
-        ("--problemName org.uma.jmetal.problem.multiobjective.lsmop.LSMOP1_2_20 "
+        ("--problemName org.uma.jmetal.problem.multiobjective.lsmop.LSMOP9_2_20 "
+                + "--maximumNumberOfEvaluations 200000 "
                 + "--referenceFrontFileName "+ referenceFrontFileName + " "
-                + "--maximumNumberOfEvaluations 75000 "
-                + "--algorithmResult population "
-                + "--populationSize 100 "
-                + "--offspringPopulationSize 100 "
-                + "--createInitialSolutions random "
-                + "--variation crossoverAndMutationVariation "
-                + "--selection tournament "
-                + "--selectionTournamentSize 2 "
-                + "--rankingForSelection dominanceRanking "
-                + "--densityEstimatorForSelection crowdingDistance "
-                + "--crossover SBX "
-                + "--crossoverProbability 0.9 "
-                + "--crossoverRepairStrategy bounds "
-                + "--sbxDistributionIndex 20.0 "
-                + "--mutation polynomial "
-                + "--mutationProbability 0.01 "
-                + "--mutationRepairStrategy bounds "
-                + "--polynomialMutationDistributionIndex 20.0 ")
+                + " --populationSize 100 --algorithmResult externalArchive --populationSizeWithArchive 96 --createInitialSolutions random --variation crossoverAndMutationVariation --offspringPopulationSize 9 --crossover BLX_ALPHA --crossoverProbability 0.1504 --crossoverRepairStrategy random --blxAlphaCrossoverAlphaValue 0.0333 --mutation polynomial --mutationProbability 0.1075 --mutationRepairStrategy random --polynomialMutationDistributionIndex 67.9223 --selection tournament --selectionTournamentSize 7")
             .split("\\s+");
 
     AutoNSGAII NSGAII = new AutoNSGAII();
@@ -51,7 +35,7 @@ public class NSGAIIConfiguredFromAParameterString {
     EvaluationObserver evaluationObserver = new EvaluationObserver(1000);
     RunTimeChartObserver<DoubleSolution> runTimeChartObserver =
         new RunTimeChartObserver<>(
-            "NSGA-II", 80, "resources/referenceFrontsCSV/" + referenceFrontFileName);
+            "NSGA-II", 80, 1000,"resources/referenceFrontsCSV/" + referenceFrontFileName);
     //WriteSolutionsToFilesObserver writeSolutionsToFilesObserver = new WriteSolutionsToFilesObserver() ;
 
     nsgaII.getObservable().register(evaluationObserver);

@@ -41,7 +41,7 @@ public class AutoNSGAII {
   public List<Parameter<?>> fixedParameterList = new ArrayList<>();
 
   private StringParameter problemNameParameter;
-  private StringParameter referenceFrontFilename;
+  public StringParameter referenceFrontFilename;
   private IntegerParameter maximumNumberOfEvaluationsParameter;
   private CategoricalParameter algorithmResultParameter;
   private PopulationSizeParameter populationSizeParameter;
@@ -159,7 +159,7 @@ public class AutoNSGAII {
    *
    * @return
    */
-  EvolutionaryAlgorithm<DoubleSolution> create() {
+  public EvolutionaryAlgorithm<DoubleSolution> create() {
 
     Problem<DoubleSolution> problem = ProblemUtils.loadProblem(problemNameParameter.getValue());
 
