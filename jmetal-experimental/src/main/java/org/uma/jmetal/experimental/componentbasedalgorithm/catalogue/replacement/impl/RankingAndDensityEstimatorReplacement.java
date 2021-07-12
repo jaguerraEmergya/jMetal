@@ -35,6 +35,20 @@ public class RankingAndDensityEstimatorReplacement<S extends Solution<?>>
     this.removalPolicy = removalPolicy;
   }
 
+  public List<S> replace2(List<S> solutionList, Integer selectedListSize) {
+    List<S> jointPopulation = new ArrayList<>();
+    jointPopulation.addAll(solutionList);
+    List<S> resultList;
+    ranking.compute(jointPopulation);
+
+    if (removalPolicy == RemovalPolicy.oneShot) {
+      resultList = oneShotTruncation(0, selectedListSize);
+    } else {
+      resultList = sequentialTruncation(0, selectedListSize);
+    }
+    return resultList;
+  }
+
   public List<S> replace(List<S> solutionList, List<S> offspringList) {
     List<S> jointPopulation = new ArrayList<>();
     jointPopulation.addAll(solutionList);

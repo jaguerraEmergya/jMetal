@@ -29,8 +29,8 @@ public class NSGAIIWithRealTimeChartExample extends AbstractAlgorithmRunner {
     CrossoverOperator<DoubleSolution> crossover;
     MutationOperator<DoubleSolution> mutation;
 
-    String problemName = "org.uma.jmetal.problem.multiobjective.lsmop.LSMOP1_2_20";
-    String referenceParetoFront = "resources/referenceFrontsCSV/LSMOP1.2D.csv";
+    String problemName = "org.uma.jmetal.problem.multiobjective.zdt.ZDT1";
+    String referenceParetoFront = "resources/referenceFrontsCSV/ZDT1.csv";
 
     problem = ProblemUtils.<DoubleSolution>loadProblem(problemName);
 
@@ -51,9 +51,9 @@ public class NSGAIIWithRealTimeChartExample extends AbstractAlgorithmRunner {
         new NSGAII<>(
             problem, populationSize, offspringPopulationSize, crossover, mutation, termination);
 
-    EvaluationObserver evaluationObserver = new EvaluationObserver(10000);
+    EvaluationObserver evaluationObserver = new EvaluationObserver(1000);
     RunTimeChartObserver<DoubleSolution> runTimeChartObserver =
-        new RunTimeChartObserver<>("NSGA-II", 80, 10000, referenceParetoFront);
+            new RunTimeChartObserver<>("NSGA-II", 80, 100, referenceParetoFront);
 
     algorithm.getObservable().register(evaluationObserver);
     algorithm.getObservable().register(runTimeChartObserver);
