@@ -42,6 +42,7 @@ public class WOF_NSGAIIDefaultConfiguration extends AbstractAlgorithmRunner {
   public static void main(String[] args) throws JMetalException, IOException {
     long initComputingTime = System.currentTimeMillis();
 
+
     Problem<DoubleSolution> problem;
     NSGAII<DoubleSolution> originalAlgorithm;
     NSGAII<DoubleSolution> finalAlgorithm = null;

@@ -32,10 +32,9 @@ public class MOEADDEWithRealTimeChartExample extends AbstractAlgorithmRunner {
     MOEADDE algorithm;
 
     String problemName = "org.uma.jmetal.problem.multiobjective.lz09.LZ09F2";
-    String referenceParetoFront = "resources/referenceFronts/LZ09_F2.csv";
+    String referenceParetoFront = "resources/referenceFrontsCSV/LZ09_F2.csv";
 
     problem = (DoubleProblem) ProblemUtils.<DoubleSolution>loadProblem(problemName);
-    problem = new LSMOP3(5, 100, 2) ;
 
     int populationSize = 300;
 
@@ -63,7 +62,7 @@ public class MOEADDEWithRealTimeChartExample extends AbstractAlgorithmRunner {
 
     EvaluationObserver evaluationObserver = new EvaluationObserver(1000);
     RunTimeChartObserver<DoubleSolution> runTimeChartObserver =
-        new RunTimeChartObserver<>("MOEA/D", 80, 1000, null);
+        new RunTimeChartObserver<>("MOEA/D", 80, 1000, referenceParetoFront);
 
     algorithm.getObservable().register(evaluationObserver);
     algorithm.getObservable().register(runTimeChartObserver);

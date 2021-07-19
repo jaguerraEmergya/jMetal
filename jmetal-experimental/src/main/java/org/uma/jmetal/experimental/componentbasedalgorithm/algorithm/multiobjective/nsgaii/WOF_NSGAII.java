@@ -8,6 +8,7 @@ import org.uma.jmetal.experimental.componentbasedalgorithm.catalogue.replacement
 import org.uma.jmetal.experimental.componentbasedalgorithm.catalogue.selection.MatingPoolSelection;
 import org.uma.jmetal.experimental.componentbasedalgorithm.catalogue.selection.impl.NaryTournamentMatingPoolSelection;
 import org.uma.jmetal.experimental.componentbasedalgorithm.catalogue.solutionscreation.SolutionsCreation;
+import org.uma.jmetal.experimental.componentbasedalgorithm.catalogue.solutionscreation.impl.ExistingListSolutionsCreation;
 import org.uma.jmetal.experimental.componentbasedalgorithm.catalogue.variation.impl.CrossoverAndMutationVariation;
 import org.uma.jmetal.operator.crossover.CrossoverOperator;
 import org.uma.jmetal.operator.mutation.MutationOperator;
@@ -114,7 +115,8 @@ public class WOF_NSGAII<S extends Solution<?>> extends ComponentBasedEvolutionar
       randomWeightVector.add(newWeightVector);
     }
 
-    this.createInitialPopulation = new StaticSolutionsCreation<>(problem, populationSize, randomWeightVector);
+    //this.createInitialPopulation = new ExistingListSolutionsCreation<>(problem, populationSize, randomWeightVector);
+    this.createInitialPopulation = null  ; //new ExistingListSolutionsCreation<>(problem, populationSize, randomWeightVector);
     //this.createInitialPopulation = new RandomSolutionsCreation<>(problem, populationSize);
 
     this.replacement =
