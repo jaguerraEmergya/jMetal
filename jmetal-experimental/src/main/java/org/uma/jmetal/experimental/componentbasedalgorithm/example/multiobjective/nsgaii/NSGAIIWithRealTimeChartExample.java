@@ -1,7 +1,12 @@
 package org.uma.jmetal.experimental.componentbasedalgorithm.example.multiobjective.nsgaii;
 
 import org.uma.jmetal.experimental.componentbasedalgorithm.algorithm.multiobjective.nsgaii.NSGAII;
+import org.uma.jmetal.operator.mutation.impl.GroupedAndLinkedPolynomialMutation;
+import org.uma.jmetal.operator.mutation.impl.GroupedPolynomialMutation;
+import org.uma.jmetal.operator.mutation.impl.LinkedPolynomialMutation;
 import org.uma.jmetal.problem.multiobjective.lsmop.LSMOP1;
+import org.uma.jmetal.util.grouping.impl.ListLinearGrouping;
+import org.uma.jmetal.util.grouping.impl.ListOrderedGrouping;
 import org.uma.jmetal.util.termination.Termination;
 import org.uma.jmetal.util.termination.impl.TerminationByEvaluations;
 import org.uma.jmetal.operator.crossover.CrossoverOperator;
@@ -16,6 +21,8 @@ import org.uma.jmetal.util.errorchecking.JMetalException;
 import org.uma.jmetal.util.observer.impl.EvaluationObserver;
 import org.uma.jmetal.util.observer.impl.RunTimeChartObserver;
 
+import java.util.List;
+
 /**
  * Class to configure and run the NSGA-II algorithm. A chart showing the front at the end of each
  * iteration is displayed.
@@ -29,8 +36,8 @@ public class NSGAIIWithRealTimeChartExample extends AbstractAlgorithmRunner {
     CrossoverOperator<DoubleSolution> crossover;
     MutationOperator<DoubleSolution> mutation;
 
-    String problemName = "org.uma.jmetal.problem.multiobjective.zdt.ZDT1";
-    String referenceParetoFront = "resources/referenceFrontsCSV/ZDT1.csv";
+    String problemName = "org.uma.jmetal.problem.multiobjective.lsmop.LSMOP1_2_20";
+    String referenceParetoFront = "resources/referenceFrontsCSV/LSMOP1.2D.csv";
 
     problem = ProblemUtils.<DoubleSolution>loadProblem(problemName);
 
@@ -41,6 +48,8 @@ public class NSGAIIWithRealTimeChartExample extends AbstractAlgorithmRunner {
     double mutationProbability = 1.0 / problem.getNumberOfVariables();
     double mutationDistributionIndex = 20.0;
     mutation = new PolynomialMutation(mutationProbability, mutationDistributionIndex);
+    mutation = new GroupedAndLinkedPolynomialMutation(mutationDistributionIndex, new ListOrderedGrouping<>(4));
+    mutation = new LinkedPolynomialMutation(mutationProbability, mutationDistributionIndex);
 
     int populationSize = 100;
     int offspringPopulationSize = 100;

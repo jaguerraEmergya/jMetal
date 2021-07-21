@@ -15,13 +15,13 @@ import org.uma.jmetal.util.observer.impl.RunTimeChartObserver;
 public class NSGAIIConfiguredFromAParameterString {
 
   public static void main(String[] args) {
-    String referenceFrontFileName = "DTLZ2.2D.csv" ;
+    String referenceFrontFileName = "LSMOP1.2D.csv" ;
 
     String[] parameters =
         ("--problemName org.uma.jmetal.problem.multiobjective.lsmop.LSMOP9_2_20 "
-                + "--maximumNumberOfEvaluations 200000 "
+                + "--maximumNumberOfEvaluations 100000 "
                 + "--referenceFrontFileName "+ referenceFrontFileName + " "
-                + " --populationSize 100 --algorithmResult externalArchive --populationSizeWithArchive 96 --createInitialSolutions random --variation crossoverAndMutationVariation --offspringPopulationSize 9 --crossover BLX_ALPHA --crossoverProbability 0.1504 --crossoverRepairStrategy random --blxAlphaCrossoverAlphaValue 0.0333 --mutation polynomial --mutationProbability 0.1075 --mutationRepairStrategy random --polynomialMutationDistributionIndex 67.9223 --selection tournament --selectionTournamentSize 7")
+                + " --populationSize 100 --algorithmResult externalArchive --populationSizeWithArchive 162 --createInitialSolutions scatterSearch --variation crossoverAndMutationVariation --offspringPopulationSize 1 --crossover SBX --crossoverProbability 0.0447 --crossoverRepairStrategy random --sbxDistributionIndex 85.3789 --mutation polynomial --mutationProbability 0.1141 --mutationRepairStrategy bounds --polynomialMutationDistributionIndex 117.7819 --selection tournament --selectionTournamentSize 6 ")
             .split("\\s+");
 
     AutoNSGAII NSGAII = new AutoNSGAII();

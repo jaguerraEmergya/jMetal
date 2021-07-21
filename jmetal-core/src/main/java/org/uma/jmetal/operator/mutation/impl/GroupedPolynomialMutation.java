@@ -18,7 +18,6 @@ import java.util.List;
  * https://doi.org/10.1109/SSCI.2016.7850214
  *
  * @author Antonio J. Nebro <antonio@lcc.uma.es>
- * @author Juan J. Durillo
  */
 @SuppressWarnings("serial")
 public class GroupedPolynomialMutation implements MutationOperator<DoubleSolution> {

@@ -149,6 +149,7 @@ public class LinkedPolynomialMutation implements MutationOperator<DoubleSolution
     double rnd, delta1, delta2, mutPow, deltaq;
     double y, yl, yu, val, xy;
 
+    rnd = randomGenerator.getRandomValue();
     for (int i = 0; i < solution.variables().size(); i++) {
       if (randomGenerator.getRandomValue() <= mutationProbability) {
         y = solution.variables().get(i);
@@ -160,7 +161,7 @@ public class LinkedPolynomialMutation implements MutationOperator<DoubleSolution
         } else {
           delta1 = (y - yl) / (yu - yl);
           delta2 = (yu - y) / (yu - yl);
-          rnd = randomGenerator.getRandomValue();
+          //rnd = randomGenerator.getRandomValue();
           mutPow = 1.0 / (distributionIndex + 1.0);
           if (rnd <= 0.5) {
             xy = 1.0 - delta1;
