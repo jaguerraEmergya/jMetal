@@ -12,51 +12,49 @@ import java.util.List;
  */
 @SuppressWarnings("serial")
 public abstract class AbstractBoundedArchive<S extends Solution<?>> implements BoundedArchive<S> {
-	protected NonDominatedSolutionListArchive<S> archive;
-	protected int maxSize;
+  protected NonDominatedSolutionListArchive<S> archive;
+  protected int maxSize;
 
-	public AbstractBoundedArchive(int maxSize) {
-		this.maxSize = maxSize;
-		this.archive = new NonDominatedSolutionListArchive<S>();
-	}
+  public AbstractBoundedArchive(int maxSize) {
+    this.maxSize = maxSize;
+    this.archive = new NonDominatedSolutionListArchive<>();
+  }
 
-	@Override
-	public boolean add(S solution) {
-		boolean success = archive.add(solution);
-		if (success) {
-			prune();
-		}
+  @Override
+  public boolean add(S solution) {
+    boolean success = archive.add(solution);
+    if (success) {
+      prune();
+    }
 
-		return success;
-	}
+    return success;
+  }
 
-	@Override
-	public S get(int index) {
-		return getSolutionList().get(index);
-	}
+  @Override
+  public S get(int index) {
+    return getSolutionList().get(index);
+  }
 
-	@Override
-	public List<S> getSolutionList() {
-		return archive.getSolutionList();
-	}
+  @Override
+  public List<S> getSolutionList() {
+    return archive.getSolutionList();
+  }
 
-	@Override
-	public int size() {
-		return archive.size();
-	}
+  @Override
+  public int size() {
+    return archive.size();
+  }
 
-	@Override
-	public int getMaxSize() {
-		return maxSize;
-	}
+  @Override
+  public int getMaxSize() {
+    return maxSize;
+  }
 
-	public abstract void prune();
+  public abstract void prune();
 
-	public Archive<S> join(Archive<S> archive) {
-		for (S solution : archive.getSolutionList()) {
-			this.add(solution) ;
-		}
+  public Archive<S> join(Archive<S> archive) {
+    archive.getSolutionList().forEach(this::add);
 
-		return archive ;
-	}
+    return archive;
+  }
 }

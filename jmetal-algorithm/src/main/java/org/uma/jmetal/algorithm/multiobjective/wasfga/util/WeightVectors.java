@@ -1,6 +1,6 @@
 package org.uma.jmetal.algorithm.multiobjective.wasfga.util;
 
-import org.uma.jmetal.util.JMetalException;
+import org.uma.jmetal.util.errorchecking.JMetalException;
 
 import java.io.BufferedReader;
 import java.io.FileInputStream;
@@ -8,6 +8,8 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.StringTokenizer;
 import java.util.Vector;
+
+import static java.lang.Double.parseDouble;
 
 /**
  * @author Rubén Saborido Infantes
@@ -93,7 +95,7 @@ public class WeightVectors {
 				double[] weight = new double[numberOfObjectives];
 
 				while (st.hasMoreTokens()) {
-					weight[j] = new Double(st.nextToken());
+					weight[j] = parseDouble(st.nextToken());
 					j++;
 				}
 
@@ -140,7 +142,7 @@ public class WeightVectors {
 				double[] weight = new double[numberOfObjectives];
 				
 				while (st.hasMoreTokens()) {
-					weight[j] = new Double(st.nextToken());
+					weight[j] = parseDouble(st.nextToken());
 					j++;
 				}
 				

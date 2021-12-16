@@ -1,16 +1,18 @@
 package org.uma.jmetal.problem.multiobjective.maf;
 
+import org.uma.jmetal.problem.doubleproblem.impl.AbstractDoubleProblem;
+import org.uma.jmetal.solution.doublesolution.DoubleSolution;
+
 import java.util.ArrayList;
 import java.util.List;
-import org.uma.jmetal.problem.impl.AbstractDoubleProblem;
-import org.uma.jmetal.solution.DoubleSolution;
 
 /**
  * Class representing problem MaF14
  */
+@SuppressWarnings("serial")
 public class MaF14 extends AbstractDoubleProblem {
-  public static int nk14;
-  public static int sublen14[], len14[];
+  public int nk14;
+  public int sublen14[], len14[];
 
   /**
    * Default constructor
@@ -67,21 +69,20 @@ public class MaF14 extends AbstractDoubleProblem {
         upper.add(10.0);
     } //for
 
-    setLowerLimit(lower);
-    setUpperLimit(upper);
+    setVariableBounds(lower, upper);
   }
 
   @Override
-  public void evaluate(DoubleSolution solution) {
+  public DoubleSolution evaluate(DoubleSolution solution) {
 
-    int numberOfVariables = solution.getNumberOfVariables();
-    int numberOfObjectives = solution.getNumberOfObjectives();
+    int numberOfVariables = solution.variables().size();
+    int numberOfObjectives = solution.objectives().length;
 
     double[] x = new double[numberOfVariables];
     double[] f = new double[numberOfObjectives];
 
     for (int i = 0; i < numberOfVariables; i++) {
-      x[i] = solution.getVariableValue(i);
+      x[i] = solution.variables().get(i);
     }
 
     //change x
@@ -123,8 +124,9 @@ public class MaF14 extends AbstractDoubleProblem {
     f[0] = subf1 * x[numberOfObjectives - 2] * (1 + g[0]);
 
     for (int i = 0; i < numberOfObjectives; i++) {
-      solution.setObjective(i, f[i]);
+      solution.objectives()[i] = f[i];
     }
+    return solution ;
   }
 
   public static double Rastrigin(double[] x) {

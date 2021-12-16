@@ -1,13 +1,12 @@
 package org.uma.jmetal.algorithm.multiobjective.moead;
 
 import org.uma.jmetal.algorithm.multiobjective.moead.util.MOEADUtils;
-import org.uma.jmetal.operator.CrossoverOperator;
-import org.uma.jmetal.operator.MutationOperator;
-import org.uma.jmetal.operator.impl.crossover.DifferentialEvolutionCrossover;
-import org.uma.jmetal.problem.ConstrainedProblem;
+import org.uma.jmetal.algorithm.multiobjective.moead.util.ViolationThresholdComparator;
+import org.uma.jmetal.operator.crossover.CrossoverOperator;
+import org.uma.jmetal.operator.crossover.impl.DifferentialEvolutionCrossover;
+import org.uma.jmetal.operator.mutation.MutationOperator;
 import org.uma.jmetal.problem.Problem;
-import org.uma.jmetal.solution.DoubleSolution;
-import org.uma.jmetal.util.comparator.impl.ViolationThresholdComparator;
+import org.uma.jmetal.solution.doublesolution.DoubleSolution;
 
 import java.util.List;
 
@@ -48,7 +47,7 @@ public class ConstraintMOEAD extends AbstractMOEAD<DoubleSolution>  {
     initializeUniformWeight();
     initializeNeighborhood();
     initializePopulation();
-    initializeIdealPoint();
+    idealPoint.update(population);
 
     violationThresholdComparator.updateThreshold(population);
 
@@ -70,12 +69,10 @@ public class ConstraintMOEAD extends AbstractMOEAD<DoubleSolution>  {
         DoubleSolution child = children.get(0) ;
         mutationOperator.execute(child);
         problem.evaluate(child);
-        if (problem instanceof ConstrainedProblem) {
-          ((ConstrainedProblem<DoubleSolution>) problem).evaluateConstraints(child);
-        }
+
         evaluations++;
 
-        updateIdealPoint(child);
+        idealPoint.update(child.objectives());
         updateNeighborhood(child, subProblemId, neighborType);
       }
 
@@ -89,9 +86,6 @@ public class ConstraintMOEAD extends AbstractMOEAD<DoubleSolution>  {
       DoubleSolution newSolution = (DoubleSolution)problem.createSolution() ;
 
       problem.evaluate(newSolution);
-      if (problem instanceof ConstrainedProblem) {
-        ((ConstrainedProblem<DoubleSolution>) problem).evaluateConstraints(newSolution);
-      }
       population.add(newSolution);
     }
   }

@@ -1,7 +1,6 @@
 package org.uma.jmetal.util.point.impl;
 
-import org.uma.jmetal.solution.Solution;
-import org.uma.jmetal.util.JMetalException;
+import org.uma.jmetal.util.errorchecking.Check;
 import org.uma.jmetal.util.point.Point;
 
 import java.io.BufferedReader;
@@ -21,7 +20,6 @@ import java.util.StringTokenizer;
 public class ArrayPoint implements Point {
   protected double[] point;
 
-
   /**
    * Default constructor
    */
@@ -32,14 +30,12 @@ public class ArrayPoint implements Point {
   /**
    * Constructor
    *
-   * @param dimensions Dimensions of the point
+   * @param dimension Dimension of the point
    */
-  public ArrayPoint(int dimensions) {
-    point = new double[dimensions];
+  public ArrayPoint(int dimension) {
+    point = new double[dimension];
 
-    for (int i = 0; i < dimensions; i++) {
-      point[i] = 0.0;
-    }
+    Arrays.fill(point, 0);
   }
 
   /**
@@ -48,32 +44,12 @@ public class ArrayPoint implements Point {
    * @param point
    */
   public ArrayPoint(Point point) {
-    if (point == null) {
-      throw new JMetalException("The point is null") ;
-    }
+    Check.notNull(point);
 
-    this.point = new double[point.getNumberOfDimensions()];
+    this.point = new double[point.getDimension()];
 
-    for (int i = 0; i < point.getNumberOfDimensions(); i++) {
-      this.point[i] = point.getDimensionValue(i);
-    }
-  }
-
-  /**
-   * Constructor from a solution
-   *
-   * @param solution
-   */
-  public ArrayPoint(Solution<?> solution) {
-    if (solution == null) {
-      throw new JMetalException("The solution is null") ;
-    }
-
-    int dimensions = solution.getNumberOfObjectives();
-    point = new double[dimensions];
-
-    for (int i = 0; i < dimensions; i++) {
-      point[i] = solution.getObjective(i);
+    for (int i = 0; i < point.getDimension(); i++) {
+      this.point[i] = point.getValue(i);
     }
   }
 
@@ -83,9 +59,7 @@ public class ArrayPoint implements Point {
    * @param point
    */
   public ArrayPoint(double[] point) {
-    if (point == null) {
-      throw new JMetalException("The array of values is null") ;
-    }
+    Check.notNull(point);
 
     this.point = new double[point.length];
     System.arraycopy(point, 0, this.point, 0, point.length);
@@ -96,9 +70,9 @@ public class ArrayPoint implements Point {
    * @param fileName
    */
   public ArrayPoint(String fileName) throws IOException {
-    FileInputStream fis = new FileInputStream(fileName);
-    InputStreamReader isr = new InputStreamReader(fis);
-    BufferedReader br = new BufferedReader(isr);
+   FileInputStream fis = new FileInputStream(fileName);
+   InputStreamReader isr = new InputStreamReader(fis);
+   try(BufferedReader br = new BufferedReader(isr)){
 
     List<Double> auxiliarPoint = new ArrayList<Double>();
     String aux = br.readLine();
@@ -106,7 +80,7 @@ public class ArrayPoint implements Point {
       StringTokenizer st = new StringTokenizer(aux);
 
       while (st.hasMoreTokens()) {
-        Double value = (new Double(st.nextToken()));
+        Double value = Double.valueOf(st.nextToken());
         auxiliarPoint.add(value);
       }
       aux = br.readLine();
@@ -117,11 +91,11 @@ public class ArrayPoint implements Point {
       point[i] = auxiliarPoint.get(i) ;
     }
 
-    br.close();
+   }
   }
 
   @Override
-  public int getNumberOfDimensions() {
+  public int getDimension() {
     return point.length;
   }
 
@@ -131,21 +105,34 @@ public class ArrayPoint implements Point {
   }
 
   @Override
-  public double getDimensionValue(int index) {
-    if ((index < 0) || (index >= point.length)) {
-      throw new JMetalException("Index value invalid: " + index +
-          ". The point length is: " + point.length) ;
-    }
+  public double getValue(int index) {
+    Check.that((index >= 0) && (index < point.length), "Index value invalid: " + index +
+            ". The point length is: " + point.length);
+
     return point[index] ;
   }
 
   @Override
-  public void setDimensionValue(int index, double value) {
-    if ((index < 0) || (index >= point.length)) {
-      throw new JMetalException("Index value invalid: " + index +
-          ". The point length is: " + point.length) ;
-    }
+  public void setValue(int index, double value) {
+    Check.that((index >= 0) && (index < point.length), "Index value invalid: " + index +
+            ". The point length is: " + point.length);
+
     point[index] = value ;
+  }
+
+  @Override
+  public void update(double[] point) {
+    this.set(point);
+  }
+
+  @Override
+  public void set(double[] point) {
+    Check.that(point.length == this.point.length, "The point to be update have a dimension of " + point.length + " "
+            + "while the parameter point has a dimension of " + point.length);
+
+    for (int i = 0; i < point.length; i++) {
+      this.point[i] = point[i] ;
+    }
   }
 
   @Override
@@ -166,10 +153,7 @@ public class ArrayPoint implements Point {
 
     ArrayPoint that = (ArrayPoint) o;
 
-    if (!Arrays.equals(point, that.point))
-      return false;
-
-    return true;
+    return Arrays.equals(point, that.point);
   }
 
   @Override public int hashCode() {

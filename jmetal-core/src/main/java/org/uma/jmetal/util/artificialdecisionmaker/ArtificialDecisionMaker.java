@@ -4,10 +4,10 @@ import org.uma.jmetal.algorithm.Algorithm;
 import org.uma.jmetal.algorithm.InteractiveAlgorithm;
 import org.uma.jmetal.problem.Problem;
 
-
 import java.util.ArrayList;
 import java.util.List;
 
+@SuppressWarnings("serial")
 public abstract class ArtificialDecisionMaker<S, R> implements Algorithm<R> {
 
   protected InteractiveAlgorithm<S,R> algorithm;

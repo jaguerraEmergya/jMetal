@@ -1,10 +1,7 @@
 package org.uma.jmetal.problem.multiobjective.cdtlz;
 
-import org.uma.jmetal.problem.ConstrainedProblem;
 import org.uma.jmetal.problem.multiobjective.dtlz.DTLZ3;
-import org.uma.jmetal.solution.DoubleSolution;
-import org.uma.jmetal.util.solutionattribute.impl.NumberOfViolatedConstraints;
-import org.uma.jmetal.util.solutionattribute.impl.OverallConstraintViolation;
+import org.uma.jmetal.solution.doublesolution.DoubleSolution;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -18,10 +15,7 @@ import java.util.Map;
  * @author Antonio J. Nebro <antonio@lcc.uma.es>
  */
 @SuppressWarnings("serial")
-public class C1_DTLZ3 extends DTLZ3 implements ConstrainedProblem<DoubleSolution> {
-  public OverallConstraintViolation<DoubleSolution> overallConstraintViolationDegree ;
-  public NumberOfViolatedConstraints<DoubleSolution> numberOfViolatedConstraints ;
-
+public class C1_DTLZ3 extends DTLZ3 {
   private static Map<Integer, Double> rValue;
 
   static {
@@ -42,35 +36,25 @@ public class C1_DTLZ3 extends DTLZ3 implements ConstrainedProblem<DoubleSolution
     super(numberOfVariables, numberOfObjectives) ;
 
     setNumberOfConstraints(1);
-
-    overallConstraintViolationDegree = new OverallConstraintViolation<DoubleSolution>() ;
-    numberOfViolatedConstraints = new NumberOfViolatedConstraints<DoubleSolution>() ;
   }
 
   @Override
-  public void evaluateConstraints(DoubleSolution solution) {
-    double[] constraint = new double[this.getNumberOfConstraints()];
+  public DoubleSolution evaluate(DoubleSolution solution) {
+    super.evaluate(solution);
+    this.evaluateConstraints(solution);
 
+    return solution ;
+  }
+
+  public void evaluateConstraints(DoubleSolution solution) {
     double sum1 = 0 ;
     double sum2 = 0 ;
-    for (int i = 0; i < getNumberOfObjectives(); i++) {
-      double v = Math.pow(solution.getObjective(i), 2) ;
+    for (int i = 0; i < solution.objectives().length; i++) {
+      double v = Math.pow(solution.objectives()[i], 2) ;
       sum1 += v - 16.0 ;
-      sum2 += v - Math.pow(rValue.get(getNumberOfObjectives()), 2.0) ;
+      sum2 += v - Math.pow(rValue.get(solution.objectives().length), 2.0) ;
     }
 
-    constraint[0] = sum1 * sum2;
-
-    double overallConstraintViolation = 0.0;
-    int violatedConstraints = 0;
-    for (int i = 0; i < getNumberOfConstraints(); i++) {
-      if (constraint[i]<0.0){
-        overallConstraintViolation+=constraint[i];
-        violatedConstraints++;
-      }
-    }
-
-    overallConstraintViolationDegree.setAttribute(solution, overallConstraintViolation);
-    numberOfViolatedConstraints.setAttribute(solution, violatedConstraints);
+    solution.constraints()[0] = sum1 * sum2 ;
   }
 }

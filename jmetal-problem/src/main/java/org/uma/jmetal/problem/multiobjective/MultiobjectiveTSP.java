@@ -1,15 +1,10 @@
 package org.uma.jmetal.problem.multiobjective;
 
+import org.uma.jmetal.problem.permutationproblem.impl.AbstractIntegerPermutationProblem;
+import org.uma.jmetal.solution.permutationsolution.PermutationSolution;
+import org.uma.jmetal.util.errorchecking.JMetalException;
 
-import org.uma.jmetal.problem.impl.AbstractIntegerPermutationProblem;
-import org.uma.jmetal.solution.PermutationSolution;
-import org.uma.jmetal.util.JMetalException;
-
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.StreamTokenizer;
+import java.io.*;
 
 /**
  * Class representing a bi-objective TSP (Traveling Salesman Problem) problem.
@@ -35,7 +30,7 @@ public class MultiobjectiveTSP extends AbstractIntegerPermutationProblem {
   }
 
   /** Evaluate() method */
-  public void evaluate(PermutationSolution<Integer> solution){
+  public PermutationSolution<Integer> evaluate(PermutationSolution<Integer> solution){
     double fitness1   ;
     double fitness2   ;
 
@@ -46,8 +41,8 @@ public class MultiobjectiveTSP extends AbstractIntegerPermutationProblem {
       int x ;
       int y ;
 
-      x = solution.getVariableValue(i) ;
-      y = solution.getVariableValue(i+1) ;
+      x = solution.variables().get(i) ;
+      y = solution.variables().get(i+1) ;
 
       fitness1 += distanceMatrix[x][y] ;
       fitness2 += costMatrix[x][y];
@@ -55,20 +50,26 @@ public class MultiobjectiveTSP extends AbstractIntegerPermutationProblem {
     int firstCity ;
     int lastCity  ;
 
-    firstCity = solution.getVariableValue(0) ;
-    lastCity = solution.getVariableValue(numberOfCities - 1) ;
+    firstCity = solution.variables().get(0) ;
+    lastCity = solution.variables().get(numberOfCities - 1) ;
 
     fitness1 += distanceMatrix[firstCity][lastCity] ;
     fitness2 += costMatrix[firstCity][lastCity];
 
-    solution.setObjective(0, fitness1);
-    solution.setObjective(1, fitness2);
+
+    solution.objectives()[0] = fitness1 ;
+    solution.objectives()[1] = fitness2 ;
+
+    return solution ;
   }
 
   private double [][] readProblem(String file) throws IOException {
     double [][] matrix = null;
 
     InputStream in = getClass().getResourceAsStream(file);
+    if (in == null) {
+      in = new FileInputStream(file) ;
+    }
     InputStreamReader isr = new InputStreamReader(in);
     BufferedReader br = new BufferedReader(isr);
 
@@ -127,12 +128,12 @@ public class MultiobjectiveTSP extends AbstractIntegerPermutationProblem {
         }
       }
     } catch (Exception e) {
-      new JMetalException("TSP.readProblem(): error when reading data file " + e);
+      throw new JMetalException("TSP.readProblem(): error when reading data file " + e);
     }
     return matrix;
   }
 
-  @Override public int getPermutationLength() {
+  @Override public int getLength() {
     return numberOfCities ;
   }
 }

@@ -1,17 +1,19 @@
 package org.uma.jmetal.problem.multiobjective.maf;
 
 
+import org.uma.jmetal.problem.doubleproblem.impl.AbstractDoubleProblem;
+import org.uma.jmetal.solution.doublesolution.DoubleSolution;
+
 import java.util.ArrayList;
 import java.util.List;
-import org.uma.jmetal.problem.impl.AbstractDoubleProblem;
-import org.uma.jmetal.solution.DoubleSolution;
 
 /**
  * Class representing problem MaF08
  */
+@SuppressWarnings("serial")
 public class MaF08 extends AbstractDoubleProblem {
 
-  public static double const8[][];
+  public double const8[][];
 
   /**
    * Default constructor
@@ -44,8 +46,7 @@ public class MaF08 extends AbstractDoubleProblem {
       upper.add(10000.0);
     }
 
-    setLowerLimit(lower);
-    setUpperLimit(upper);
+    setVariableBounds(lower, upper);
   }
 
   /**
@@ -54,16 +55,16 @@ public class MaF08 extends AbstractDoubleProblem {
    * @param solution The solution to evaluate
    */
   @Override
-  public void evaluate(DoubleSolution solution) {
+  public DoubleSolution evaluate(DoubleSolution solution) {
 
-    int numberOfVariables = solution.getNumberOfVariables();
-    int numberOfObjectives = solution.getNumberOfObjectives();
+    int numberOfVariables = solution.variables().size();
+    int numberOfObjectives = solution.objectives().length;
 
     double[] x = new double[numberOfVariables];
     double[] f = new double[numberOfObjectives];
 
     for (int i = 0; i < numberOfVariables; i++) {
-      x[i] = solution.getVariableValue(i);
+      x[i] = solution.variables().get(i);
     }
     // evaluate f
     for (int i = 0; i < numberOfObjectives; i++) {
@@ -71,8 +72,9 @@ public class MaF08 extends AbstractDoubleProblem {
     }
 
     for (int i = 0; i < numberOfObjectives; i++) {
-      solution.setObjective(i, f[i]);
+      solution.objectives()[i] = f[i];
     }
+    return solution ;
   }
 
   public static double[][] polygonpoints(int m, double r) {

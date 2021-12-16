@@ -1,7 +1,7 @@
 package org.uma.jmetal.problem.multiobjective;
 
-import org.uma.jmetal.problem.impl.AbstractDoubleProblem;
-import org.uma.jmetal.solution.DoubleSolution;
+import org.uma.jmetal.problem.doubleproblem.impl.AbstractDoubleProblem;
+import org.uma.jmetal.solution.doublesolution.DoubleSolution;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -17,7 +17,7 @@ import java.util.List;
  */
 @SuppressWarnings("serial")
 public class FourBarTruss extends AbstractDoubleProblem {
-	private double f = 10   ;
+  private double f = 10   ;
   private double e = 200000;
   private double l = 200  ;
   private double sigma = 10 ;
@@ -45,24 +45,25 @@ public class FourBarTruss extends AbstractDoubleProblem {
     upperLimit.add(upperLimit.get(0)) ;
     upperLimit.add(upperLimit.get(0)) ;
 
-    setLowerLimit(lowerLimit);
-    setUpperLimit(upperLimit);
+    setVariableBounds(lowerLimit, upperLimit);
   }
 
   /**
    * Evaluate() method
    */
   @Override
-  public void evaluate(DoubleSolution solution) {
+  public DoubleSolution evaluate(DoubleSolution solution) {
     double [] fx = new double[2] ;
     double [] x = new double[getNumberOfVariables()] ;
     for (int i = 0 ; i < getNumberOfVariables(); i++)
-    	x[i] = solution.getVariableValue(i) ;
+    	x[i] = solution.variables().get(i) ;
     
     fx[0] = l *(2*x[0]+ Math.sqrt(2.0)*x[1]+ Math.sqrt(x[2])+x[3]) ;
     fx[1] = (f * l / e)*(2/x[0] + 2*Math.sqrt(2)/x[1] - 2*Math.sqrt(2)/x[2] + 2/x[3]);
-    
-    solution.setObjective(0,fx[0]);
-    solution.setObjective(1,fx[1]);
+
+    solution.objectives()[0] = fx[0];
+    solution.objectives()[1] = fx[1];
+
+    return solution ;
   }
 }

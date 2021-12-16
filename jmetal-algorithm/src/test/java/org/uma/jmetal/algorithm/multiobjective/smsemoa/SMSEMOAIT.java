@@ -2,19 +2,18 @@ package org.uma.jmetal.algorithm.multiobjective.smsemoa;
 
 import org.junit.Test;
 import org.uma.jmetal.algorithm.Algorithm;
-import org.uma.jmetal.operator.CrossoverOperator;
-import org.uma.jmetal.operator.MutationOperator;
-import org.uma.jmetal.operator.impl.crossover.SBXCrossover;
-import org.uma.jmetal.operator.impl.mutation.PolynomialMutation;
-import org.uma.jmetal.operator.impl.selection.RandomSelection;
-import org.uma.jmetal.problem.DoubleProblem;
+import org.uma.jmetal.operator.crossover.CrossoverOperator;
+import org.uma.jmetal.operator.crossover.impl.SBXCrossover;
+import org.uma.jmetal.operator.mutation.MutationOperator;
+import org.uma.jmetal.operator.mutation.impl.PolynomialMutation;
+import org.uma.jmetal.operator.selection.impl.RandomSelection;
+import org.uma.jmetal.problem.doubleproblem.DoubleProblem;
 import org.uma.jmetal.problem.multiobjective.zdt.ZDT1;
 import org.uma.jmetal.problem.multiobjective.zdt.ZDT4;
-import org.uma.jmetal.qualityindicator.QualityIndicator;
-import org.uma.jmetal.qualityindicator.impl.Hypervolume;
-import org.uma.jmetal.qualityindicator.impl.hypervolume.PISAHypervolume;
-import org.uma.jmetal.solution.DoubleSolution;
-import org.uma.jmetal.util.AlgorithmRunner;
+import org.uma.jmetal.solution.doublesolution.DoubleSolution;
+import org.uma.jmetal.util.legacy.qualityindicator.QualityIndicator;
+import org.uma.jmetal.util.legacy.qualityindicator.impl.hypervolume.Hypervolume;
+import org.uma.jmetal.util.legacy.qualityindicator.impl.hypervolume.impl.PISAHypervolume;
 
 import java.util.List;
 
@@ -24,78 +23,83 @@ public class SMSEMOAIT {
   Algorithm<List<DoubleSolution>> algorithm;
 
   @Test
-  public void shouldTheAlgorithmReturnANumberOfSolutionsWhenSolvingASimpleProblem() throws Exception {
-    ZDT4 problem = new ZDT4() ;
+  public void shouldTheAlgorithmReturnANumberOfSolutionsWhenSolvingASimpleProblem()
+      throws Exception {
+    ZDT4 problem = new ZDT4();
     CrossoverOperator<DoubleSolution> crossover;
     MutationOperator<DoubleSolution> mutation;
 
-    double crossoverProbability = 0.9 ;
-    double crossoverDistributionIndex = 20.0 ;
-    crossover = new SBXCrossover(crossoverProbability, crossoverDistributionIndex) ;
+    double crossoverProbability = 0.9;
+    double crossoverDistributionIndex = 20.0;
+    crossover = new SBXCrossover(crossoverProbability, crossoverDistributionIndex);
 
-    double mutationProbability = 1.0 / problem.getNumberOfVariables() ;
-    double mutationDistributionIndex = 20.0 ;
-    mutation = new PolynomialMutation(mutationProbability, mutationDistributionIndex) ;
+    double mutationProbability = 1.0 / problem.getNumberOfVariables();
+    double mutationDistributionIndex = 20.0;
+    mutation = new PolynomialMutation(mutationProbability, mutationDistributionIndex);
 
-    Hypervolume<DoubleSolution> hypervolumeImplementation ;
-    hypervolumeImplementation = new PISAHypervolume<>() ;
+    Hypervolume<DoubleSolution> hypervolumeImplementation;
+    hypervolumeImplementation = new PISAHypervolume<>();
     hypervolumeImplementation.setOffset(100.0);
 
-    algorithm = new SMSEMOABuilder<>(problem, crossover, mutation)
-        .setSelectionOperator(new RandomSelection<DoubleSolution>())
-        .setMaxEvaluations(25000)
-        .setPopulationSize(100)
-        .setHypervolumeImplementation(hypervolumeImplementation)
-        .build() ;
+    algorithm =
+        new SMSEMOABuilder<>(problem, crossover, mutation)
+            .setSelectionOperator(new RandomSelection<DoubleSolution>())
+            .setMaxEvaluations(25000)
+            .setPopulationSize(100)
+            .setHypervolumeImplementation(hypervolumeImplementation)
+            .build();
 
-    new AlgorithmRunner.Executor(algorithm).execute() ;
+    algorithm.run();
 
-    List<DoubleSolution> population = algorithm.getResult() ;
+    List<DoubleSolution> population = algorithm.getResult();
 
     /*
     Rationale: the default problem is ZDT4, and usually SMSEMOA, configured with standard
     settings, should return 100 solutions
     */
-    assertTrue(population.size() >= 98) ;
+    assertTrue(population.size() >= 98);
   }
 
   @Test
   public void shouldTheHypervolumeHaveAMinimumValue() throws Exception {
-    DoubleProblem problem = new ZDT1() ;
+    DoubleProblem problem = new ZDT1();
 
     CrossoverOperator<DoubleSolution> crossover;
     MutationOperator<DoubleSolution> mutation;
 
-    double crossoverProbability = 0.9 ;
-    double crossoverDistributionIndex = 20.0 ;
-    crossover = new SBXCrossover(crossoverProbability, crossoverDistributionIndex) ;
+    double crossoverProbability = 0.9;
+    double crossoverDistributionIndex = 20.0;
+    crossover = new SBXCrossover(crossoverProbability, crossoverDistributionIndex);
 
-    double mutationProbability = 1.0 / problem.getNumberOfVariables() ;
-    double mutationDistributionIndex = 20.0 ;
-    mutation = new PolynomialMutation(mutationProbability, mutationDistributionIndex) ;
+    double mutationProbability = 1.0 / problem.getNumberOfVariables();
+    double mutationDistributionIndex = 20.0;
+    mutation = new PolynomialMutation(mutationProbability, mutationDistributionIndex);
 
-    Hypervolume<DoubleSolution> hypervolumeImplementation ;
-    hypervolumeImplementation = new PISAHypervolume<>() ;
+    Hypervolume<DoubleSolution> hypervolumeImplementation;
+    hypervolumeImplementation = new PISAHypervolume<>();
     hypervolumeImplementation.setOffset(100.0);
 
-    algorithm = new SMSEMOABuilder<>(problem, crossover, mutation)
-        .setSelectionOperator(new RandomSelection<DoubleSolution>())
-        .setMaxEvaluations(25000)
-        .setPopulationSize(100)
-        .setHypervolumeImplementation(hypervolumeImplementation)
-        .build();
+    algorithm =
+        new SMSEMOABuilder<>(problem, crossover, mutation)
+            .setSelectionOperator(new RandomSelection<DoubleSolution>())
+            .setMaxEvaluations(25000)
+            .setPopulationSize(100)
+            .setHypervolumeImplementation(hypervolumeImplementation)
+            .build();
 
-    new AlgorithmRunner.Executor(algorithm).execute();
+    algorithm.run();
 
     List<DoubleSolution> population = algorithm.getResult();
 
-    QualityIndicator<List<DoubleSolution>, Double> hypervolume = new PISAHypervolume<>("/referenceFronts/ZDT1.pf") ;
+    QualityIndicator<List<DoubleSolution>, Double> hypervolume =
+        new PISAHypervolume<>("../resources/referenceFrontsCSV/ZDT1.csv");
 
-    // Rationale: the default problem is ZDT1, and SMSEMOA, configured with standard settings, should
+    // Rationale: the default problem is ZDT1, and SMSEMOA, configured with standard settings,
+    // should
     // return find a front with a hypervolume value higher than 0.65
 
-    double hv = (Double)hypervolume.evaluate(population) ;
+    double hv = (Double) hypervolume.evaluate(population);
 
-    assertTrue(hv > 0.65) ;
+    assertTrue(hv > 0.65);
   }
 }

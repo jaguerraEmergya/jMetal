@@ -1,9 +1,9 @@
 package org.uma.jmetal.algorithm.multiobjective.mombi;
 
 import org.uma.jmetal.algorithm.impl.AbstractGeneticAlgorithm;
-import org.uma.jmetal.operator.CrossoverOperator;
-import org.uma.jmetal.operator.MutationOperator;
-import org.uma.jmetal.operator.SelectionOperator;
+import org.uma.jmetal.operator.crossover.CrossoverOperator;
+import org.uma.jmetal.operator.mutation.MutationOperator;
+import org.uma.jmetal.operator.selection.SelectionOperator;
 import org.uma.jmetal.problem.Problem;
 import org.uma.jmetal.solution.Solution;
 import org.uma.jmetal.util.evaluator.SolutionListEvaluator;
@@ -163,13 +163,13 @@ public abstract class AbstractMOMBI<S extends Solution<?>> extends AbstractGenet
 	}
 
 	protected void updateReferencePoint(S s) {
-		for (int i = 0; i < s.getNumberOfObjectives(); i++)
-			this.getReferencePoint().set(i, Math.min(this.getReferencePoint().get(i),s.getObjective(i)));
+		for (int i = 0; i < s.objectives().length; i++)
+			this.getReferencePoint().set(i, Math.min(this.getReferencePoint().get(i),s.objectives()[i]));
 	}
 
 	protected void updateNadirPoint(S s) {
-		for (int i = 0; i < s.getNumberOfObjectives(); i++)
-			this.getNadirPoint().set(i, Math.max(this.getNadirPoint().get(i),s.getObjective(i)));
+		for (int i = 0; i < s.objectives().length; i++)
+			this.getNadirPoint().set(i, Math.max(this.getNadirPoint().get(i),s.objectives()[i]));
 	}
 
 	public void updateReferencePoint(List<S> population) {

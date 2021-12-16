@@ -1,28 +1,7 @@
-//  ZDT1.java
-//
-//  Author:
-//       Antonio J. Nebro <antonio@lcc.uma.es>
-//       Juan J. Durillo <durillo@lcc.uma.es>
-//
-//  Copyright (c) 2011 Antonio J. Nebro, Juan J. Durillo
-//
-
-
-
-
-//
-
-
-
-
-// 
-
-
-
 package org.uma.jmetal.problem.multiobjective.zdt;
 
-import org.uma.jmetal.problem.impl.AbstractDoubleProblem;
-import org.uma.jmetal.solution.DoubleSolution;
+import org.uma.jmetal.problem.doubleproblem.impl.AbstractDoubleProblem;
+import org.uma.jmetal.solution.doublesolution.DoubleSolution;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -54,21 +33,22 @@ public class ZDT1 extends AbstractDoubleProblem {
       upperLimit.add(1.0);
     }
 
-    setLowerLimit(lowerLimit);
-    setUpperLimit(upperLimit);
+    setVariableBounds(lowerLimit, upperLimit);
   }
 
   /** Evaluate() method */
-  public void evaluate(DoubleSolution solution) {
-    double[] f = new double[getNumberOfObjectives()];
+  public DoubleSolution evaluate(DoubleSolution solution) {
+    double[] f = new double[solution.objectives().length];
 
-    f[0] = solution.getVariableValue(0);
+    f[0] = solution.variables().get(0);
     double g = this.evalG(solution);
     double h = this.evalH(f[0], g);
     f[1] = h * g;
 
-    solution.setObjective(0, f[0]);
-    solution.setObjective(1, f[1]);
+    solution.objectives()[0] = f[0];
+    solution.objectives()[1] = f[1];
+
+    return solution ;
   }
 
   /**
@@ -76,15 +56,14 @@ public class ZDT1 extends AbstractDoubleProblem {
    *
    * @param solution Solution
    */
-  private double evalG(DoubleSolution solution) {
+  protected double evalG(DoubleSolution solution) {
     double g = 0.0;
-    for (int i = 1; i < solution.getNumberOfVariables(); i++) {
-      g += solution.getVariableValue(i);
+    for (int i = 1; i < solution.variables().size(); i++) {
+      g += solution.variables().get(i);
     }
-    double constant = 9.0 / (solution.getNumberOfVariables() - 1);
-    g = constant * g;
-    g = g + 1.0;
-    return g;
+    double constant = 9.0 / (solution.variables().size() - 1);
+
+    return constant * g + 1.0;
   }
 
   /**
@@ -93,7 +72,7 @@ public class ZDT1 extends AbstractDoubleProblem {
    * @param f First argument of the function H.
    * @param g Second argument of the function H.
    */
-  public double evalH(double f, double g) {
+  protected double evalH(double f, double g) {
     double h ;
     h = 1.0 - Math.sqrt(f / g);
     return h;

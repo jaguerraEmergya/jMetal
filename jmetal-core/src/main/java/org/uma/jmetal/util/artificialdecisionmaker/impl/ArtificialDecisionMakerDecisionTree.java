@@ -1,24 +1,18 @@
 package org.uma.jmetal.util.artificialdecisionmaker.impl;
 
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Set;
-import java.util.SortedMap;
-import java.util.TreeMap;
 import org.uma.jmetal.algorithm.InteractiveAlgorithm;
+import org.uma.jmetal.problem.BoundedProblem;
 import org.uma.jmetal.problem.Problem;
-import org.uma.jmetal.problem.impl.AbstractDoubleProblem;
-import org.uma.jmetal.problem.impl.AbstractIntegerDoubleProblem;
-import org.uma.jmetal.problem.impl.AbstractIntegerProblem;
-import org.uma.jmetal.solution.DoubleSolution;
 import org.uma.jmetal.solution.Solution;
 import org.uma.jmetal.util.artificialdecisionmaker.ArtificialDecisionMaker;
 import org.uma.jmetal.util.artificialdecisionmaker.DecisionTreeEstimator;
+import org.uma.jmetal.util.bounds.Bounds;
 import org.uma.jmetal.util.comparator.ObjectiveComparator;
 import org.uma.jmetal.util.distance.impl.EuclideanDistanceBetweenSolutionsInObjectiveSpace;
 import org.uma.jmetal.util.pseudorandom.JMetalRandom;
+
+import java.util.*;
 
 
 /**
@@ -29,12 +23,13 @@ import org.uma.jmetal.util.pseudorandom.JMetalRandom;
  * In International Conference on Parallel Problem Solving from Nature (pp. 483-492). Springer, Cham.
  * @author Cristobal Barba <cbarba@lcc.uma.es>
  */
+@SuppressWarnings("serial")
 public class ArtificialDecisionMakerDecisionTree<S extends Solution<?>> extends ArtificialDecisionMaker<S,List<S>> {
 
   protected List<Double> idealOjectiveVector = null;
   protected List<Double> nadirObjectiveVector = null;
   protected List<Double> rankingCoeficient = null;
-  protected List<Double>asp = null;
+  protected List<Double> asp = null;
   protected double tolerance;
  // protected int numberReferencePoints;
   protected JMetalRandom random = null;
@@ -47,6 +42,7 @@ public class ArtificialDecisionMakerDecisionTree<S extends Solution<?>> extends 
   protected List<Double> currentReferencePoint;
   protected List<Double> distances;
   private S solutionRun=null;
+  
   public ArtificialDecisionMakerDecisionTree(Problem<S> problem,
       InteractiveAlgorithm<S,List<S>> algorithm,double considerationProbability,double tolerance,int maxEvaluations
   ,List<Double> rankingCoeficient,List<Double> asp) {
@@ -66,10 +62,7 @@ public class ArtificialDecisionMakerDecisionTree<S extends Solution<?>> extends 
 
 
     if(asp!=null){
-      this.asp= new ArrayList<>();
-      for (Double obj:asp) {
-        this.asp.add(obj);
-      }
+      this.asp = new ArrayList<>(asp);
     }
   }
 
@@ -84,28 +77,17 @@ public class ArtificialDecisionMakerDecisionTree<S extends Solution<?>> extends 
   private void updateObjectiveVector(List<S> solutionList){
    for (int j = 0; j < numberOfObjectives; j++) {
       Collections.sort(solutionList, new ObjectiveComparator<>(j));
-      double objetiveMinn = solutionList.get(0).getObjective(j);
-      double objetiveMaxn = solutionList.get(solutionList.size() - 1).getObjective(j);
+      double objetiveMinn = solutionList.get(0).objectives()[j];
+      double objetiveMaxn = solutionList.get(solutionList.size() - 1).objectives()[j];
       idealOjectiveVector.add(objetiveMinn);
       nadirObjectiveVector.add(objetiveMaxn);
     }
-    if(problem instanceof AbstractDoubleProblem){
-      AbstractDoubleProblem aux =(AbstractDoubleProblem)problem;
+    if(problem instanceof BoundedProblem){
+      BoundedProblem<?, ?> aux =(BoundedProblem<?, ?>)problem;
       for (int i = 0; i < numberOfObjectives ; i++) {
-        idealOjectiveVector.add(aux.getLowerBound(i));
-        nadirObjectiveVector.add(aux.getUpperBound(i));
-      }
-    }else if(problem instanceof AbstractIntegerProblem){
-      AbstractIntegerProblem aux =(AbstractIntegerProblem)problem;
-      for (int i = 0; i < numberOfObjectives ; i++) {
-        idealOjectiveVector.add(new Double(aux.getLowerBound(i)));
-        nadirObjectiveVector.add(new Double(aux.getUpperBound(i)));
-      }
-    }else if(problem instanceof AbstractIntegerDoubleProblem){
-      AbstractIntegerDoubleProblem aux =(AbstractIntegerDoubleProblem)problem;
-      for (int i = 0; i < numberOfObjectives ; i++) {
-        idealOjectiveVector.add(aux.getLowerBound(i).doubleValue());
-        nadirObjectiveVector.add(aux.getUpperBound(i).doubleValue());
+        Bounds<?> bounds = aux.getBoundsForVariables().get(i);
+        idealOjectiveVector.add(((Number) bounds.getLowerBound()).doubleValue());
+        nadirObjectiveVector.add(((Number) bounds.getUpperBound()).doubleValue());
       }
     }
     if(asp==null)
@@ -179,7 +161,7 @@ public class ArtificialDecisionMakerDecisionTree<S extends Solution<?>> extends 
     S solution = getSolution(front,currentReferencePoint);
     for (Integer i : order) {
       double rand = random.nextDouble(0.0, 1.0);
-      if ((asp.get(i) - solution.getObjective(i)) < tolerance
+      if ((asp.get(i) - solution.objectives()[i]) < tolerance
           && rand < considerationProbability) {
         indexRelevantObjectivesFunctions.add(i);
       } else if (rand < varyingProbability) {
@@ -203,7 +185,7 @@ public class ArtificialDecisionMakerDecisionTree<S extends Solution<?>> extends 
         for (int i = 0; i < numberOfObjectives; i++) {
           if (indexOfRelevantObjectiveFunctions.contains(i)) {
             result.add(
-                asp.get(i) - (asp.get(i) - solution.getObjective(i)) / 2);
+                asp.get(i) - (asp.get(i) - solution.objectives()[i]) / 2);
           } else {
             //predict the i position of reference point
             result.add(prediction(i,front,solution));
@@ -218,18 +200,16 @@ public class ArtificialDecisionMakerDecisionTree<S extends Solution<?>> extends 
   }
 
   private void calculateDistance(S solution, List<Double> referencePoint) {
-    EuclideanDistanceBetweenSolutionsInObjectiveSpace euclidean = new EuclideanDistanceBetweenSolutionsInObjectiveSpace();
+    EuclideanDistanceBetweenSolutionsInObjectiveSpace<S> euclidean = new EuclideanDistanceBetweenSolutionsInObjectiveSpace<>();
 
     double distance = euclidean
-        .getDistance((DoubleSolution) solution, getSolutionFromRP(referencePoint));
+        .compute(solution, getSolutionFromRP(referencePoint));
     distances.add(distance);
   }
-  private DoubleSolution getSolutionFromRP(List<Double> referencePoint){
-    DoubleSolution result = (DoubleSolution)problem.createSolution();
-    for (int i = 0; i < result.getNumberOfObjectives(); i++) {
-      result.setObjective(i,referencePoint.get(i));
-      result.setVariableValue(i,referencePoint.get(i));
-
+  private S getSolutionFromRP(List<Double> referencePoint){
+    S result = problem.createSolution();
+    for (int i = 0; i < result.objectives().length; i++) {
+      result.objectives()[i] = referencePoint.get(i);
     }
     return result;
   }
@@ -260,11 +240,11 @@ public class ArtificialDecisionMakerDecisionTree<S extends Solution<?>> extends 
 
   private S getSolution(List<S> front, List<Double> referencePoint) {
     S result = front.get(0);
-    EuclideanDistanceBetweenSolutionsInObjectiveSpace euclidean = new EuclideanDistanceBetweenSolutionsInObjectiveSpace();
+    EuclideanDistanceBetweenSolutionsInObjectiveSpace<S> euclidean = new EuclideanDistanceBetweenSolutionsInObjectiveSpace<>();
     SortedMap<Double, S> map = new TreeMap<>();
-    DoubleSolution aux = getSolutionFromRP(referencePoint);
+    S aux = getSolutionFromRP(referencePoint);
     for (S solution : front) {
-      double distance = euclidean.getDistance(solution,aux);
+      double distance = euclidean.compute(solution,aux);
       map.put(distance, solution);
     }
     result = map.get(map.firstKey());

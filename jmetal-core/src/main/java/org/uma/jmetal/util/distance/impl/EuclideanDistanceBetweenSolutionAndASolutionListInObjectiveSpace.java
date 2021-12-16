@@ -11,21 +11,22 @@ import java.util.List;
  *
  * @author <antonio@lcc.uma.es>
  */
-public class EuclideanDistanceBetweenSolutionAndASolutionListInObjectiveSpace<S extends Solution<Double>, L extends List<S>>
-    implements Distance<S, L> {
+public class EuclideanDistanceBetweenSolutionAndASolutionListInObjectiveSpace
+        <S extends Solution<?>, L extends List<S>>
+        implements Distance<S, L> {
 
-  private EuclideanDistanceBetweenSolutionsInObjectiveSpace<S> distance ;
+  private EuclideanDistanceBetweenVectors distance ;
 
   public EuclideanDistanceBetweenSolutionAndASolutionListInObjectiveSpace() {
-    distance = new EuclideanDistanceBetweenSolutionsInObjectiveSpace<S>() ;
+    distance = new EuclideanDistanceBetweenVectors() ;
   }
 
   @Override
-  public double getDistance(S solution, L solutionList) {
+  public double compute(S solution, L solutionList) {
     double bestDistance = Double.MAX_VALUE;
 
-    for (int i = 0; i < solutionList.size();i++){
-      double aux = distance.getDistance(solution, solutionList.get(i));
+    for (S s : solutionList) {
+      double aux = distance.compute(solution.objectives(), s.objectives());
       if (aux < bestDistance)
         bestDistance = aux;
     }

@@ -2,16 +2,13 @@ package org.uma.jmetal.algorithm.singleobjective.evolutionstrategy;
 
 import org.uma.jmetal.algorithm.impl.AbstractEvolutionStrategy;
 import org.uma.jmetal.algorithm.singleobjective.evolutionstrategy.util.CMAESUtils;
-import org.uma.jmetal.problem.DoubleProblem;
-import org.uma.jmetal.solution.DoubleSolution;
+import org.uma.jmetal.problem.doubleproblem.DoubleProblem;
+import org.uma.jmetal.solution.doublesolution.DoubleSolution;
 import org.uma.jmetal.util.JMetalLogger;
+import org.uma.jmetal.util.bounds.Bounds;
 import org.uma.jmetal.util.comparator.ObjectiveComparator;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Random;
+import java.util.*;
 
 /**
  * Class implementing the CMA-ES algorithm
@@ -166,7 +163,7 @@ public class CovarianceMatrixAdaptationEvolutionStrategy
   }
 
   @Override protected void initProgress() {
-    evaluations = 0;
+    evaluations = lambda;
   }
 
   @Override protected void updateProgress() {
@@ -244,7 +241,7 @@ public class CovarianceMatrixAdaptationEvolutionStrategy
     weights = new double[mu];
     double sum = 0;
     for (int i = 0; i < mu; i++) {
-      weights[i] = (Math.log(mu + 1 / 2) - Math.log(i + 1));
+      weights[i] = (Math.log(mu + 0.5) - Math.log(i + 1));
       sum += weights[i];
     }
     // normalize recombination weights array
@@ -359,7 +356,7 @@ public class CovarianceMatrixAdaptationEvolutionStrategy
     for (int i = 0; i < numberOfVariables; i++) {
       distributionMean[i] = 0.;
       for (int iNk = 0; iNk < mu; iNk++) {
-        double variableValue = (double) getPopulation().get(iNk).getVariableValue(i);
+        double variableValue = (double) getPopulation().get(iNk).variables().get(i);
         distributionMean[i] += weights[iNk] * variableValue;
       }
     }
@@ -419,8 +416,8 @@ public class CovarianceMatrixAdaptationEvolutionStrategy
            * additional rank mu
            * update
            */
-          double valueI = getPopulation().get(k).getVariableValue(i);
-          double valueJ = getPopulation().get(k).getVariableValue(j);
+          double valueI = getPopulation().get(k).variables().get(i);
+          double valueJ = getPopulation().get(k).variables().get(j);
           c[i][j] += cmu
                 * weights[k]
                 * (valueI - oldDistributionMean[i])
@@ -513,21 +510,18 @@ public class CovarianceMatrixAdaptationEvolutionStrategy
       }
 
       double value = distributionMean[i] + sigma * sum;
-      if (value > ((DoubleProblem)getProblem()).getUpperBound(i)) {
-        value = ((DoubleProblem)getProblem()).getUpperBound(i);
-      } else if (value < ((DoubleProblem)getProblem()).getLowerBound(i)) {
-        value = ((DoubleProblem)getProblem()).getLowerBound(i);
-      }
+      Bounds<Double> bounds = ((DoubleProblem)getProblem()).getBoundsForVariables().get(i) ;
+      value = bounds.restrict(value);
 
-      solution.setVariableValue(i, value);
+      solution.variables().set(i, value);
     }
 
     return solution;
   }
 
   private void storeBest() {
-    if ((bestSolutionEver == null) || (bestSolutionEver.getObjective(0) > getPopulation().get(0)
-        .getObjective(0))) {
+    if ((bestSolutionEver == null) || (bestSolutionEver.objectives()[0] > getPopulation().get(0)
+        .objectives()[0])) {
       bestSolutionEver = getPopulation().get(0);
     }
   }

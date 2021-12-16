@@ -5,7 +5,7 @@
     <parent>
         <groupId>org.uma.jmetal</groupId>
         <artifactId>jmetal</artifactId>
-        <version>5.5.3-SNAPSHOT</version>
+        <version>5.12-SNAPSHOT</version>
     </parent>
     <artifactId>jmetal-problem</artifactId>
     <packaging>jar</packaging>
@@ -57,8 +57,8 @@
             <artifactId>jmetal-core</artifactId>
         </dependency>
         <dependency>
-            <groupId>junit</groupId>
-            <artifactId>junit</artifactId>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter-engine</artifactId>
         </dependency>
         <dependency>
             <groupId>org.apache.maven.reporting</groupId>

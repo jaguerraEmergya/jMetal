@@ -1,6 +1,6 @@
 package org.uma.jmetal.problem.multiobjective.wfg;
 
-import org.uma.jmetal.solution.DoubleSolution;
+import org.uma.jmetal.solution.doublesolution.DoubleSolution;
 
 /**
  * This class implements the WFG2 problem
@@ -137,12 +137,12 @@ public class WFG2 extends WFG {
    *
    * @param solution The solution to runAlgorithm
    */
-  public void evaluate(DoubleSolution solution) {
+  public DoubleSolution evaluate(DoubleSolution solution) {
     float[] variables = new float[getNumberOfVariables()];
     double[] x = new double[getNumberOfVariables()];
 
     for (int i = 0; i < getNumberOfVariables(); i++) {
-      x[i] = solution.getVariableValue(i);
+      x[i] = solution.variables().get(i);
     }
 
     for (int i = 0; i < getNumberOfVariables(); i++) {
@@ -152,8 +152,9 @@ public class WFG2 extends WFG {
     float[] sol2 = evaluate(variables);
 
     for (int i = 0; i < sol2.length; i++) {
-      solution.setObjective(i, sol2[i]);
+      solution.objectives()[i] = sol2[i];
     }
+    return solution ;
   }
 }
 

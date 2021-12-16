@@ -1,7 +1,7 @@
 package org.uma.jmetal.problem.multiobjective.glt;
 
-import org.uma.jmetal.problem.impl.AbstractDoubleProblem;
-import org.uma.jmetal.solution.DoubleSolution;
+import org.uma.jmetal.problem.doubleproblem.impl.AbstractDoubleProblem;
+import org.uma.jmetal.solution.doublesolution.DoubleSolution;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -32,7 +32,7 @@ public class GLT6 extends AbstractDoubleProblem {
   public GLT6(int numberOfVariables) {
     setNumberOfVariables(numberOfVariables);
     setNumberOfObjectives(3);
-    setName("GLT5");
+    setName("GLT6");
 
     List<Double> lowerLimit = new ArrayList<>(getNumberOfVariables()) ;
     List<Double> upperLimit = new ArrayList<>(getNumberOfVariables()) ;
@@ -46,29 +46,29 @@ public class GLT6 extends AbstractDoubleProblem {
       upperLimit.add(1.0);
     }
 
-    setLowerLimit(lowerLimit);
-    setUpperLimit(upperLimit);
+    setVariableBounds(lowerLimit, upperLimit);
   }
 
   @Override
-  public void evaluate(DoubleSolution solution) {
-    solution.setObjective(0, (1.0 + g(solution))*
-        (1.0 - Math.cos(solution.getVariableValue(0)*Math.PI/2.0))*
-        (1.0 - Math.cos(solution.getVariableValue(1)*Math.PI/2.0)));
-    solution.setObjective(1, (1.0 + g(solution))*
-        (1.0 - Math.cos(solution.getVariableValue(0)*Math.PI/2.0))*
-        (1.0 - Math.sin(solution.getVariableValue(1)*Math.PI/2.0)));
-    solution.setObjective(2, (1.0 + g(solution))*
-        (2.0 - Math.sin(solution.getVariableValue(0)*Math.PI/2.0)
-        - Math.signum(Math.cos(4*solution.getVariableValue(0)*Math.PI))));
+  public DoubleSolution evaluate(DoubleSolution solution) {
+    solution.objectives()[0] = (1.0 + g(solution))*
+        (1.0 - Math.cos(solution.variables().get(0)*Math.PI/2.0))*
+        (1.0 - Math.cos(solution.variables().get(1)*Math.PI/2.0));
+    solution.objectives()[1] = (1.0 + g(solution))*
+        (1.0 - Math.cos(solution.variables().get(0)*Math.PI/2.0))*
+        (1.0 - Math.sin(solution.variables().get(1)*Math.PI/2.0));
+    solution.objectives()[2] = (1.0 + g(solution))*
+        (2.0 - Math.sin(solution.variables().get(0)*Math.PI/2.0)
+        - Math.signum(Math.cos(4*solution.variables().get(0)*Math.PI)));
+    return solution ;
   }
 
   private double g(DoubleSolution solution) {
     double result = 0.0 ;
 
-    for (int i = 2; i < solution.getNumberOfVariables(); i++) {
-      double value =solution.getVariableValue(i)
-          - Math.sin(2*Math.PI*solution.getVariableValue(0)+i*Math.PI/solution.getNumberOfVariables()) ;
+    for (int i = 2; i < solution.variables().size(); i++) {
+      double value =solution.variables().get(i)
+          - Math.sin(2*Math.PI*solution.variables().get(0)+i*Math.PI/solution.variables().size()) ;
 
       result += value * value ;
     }

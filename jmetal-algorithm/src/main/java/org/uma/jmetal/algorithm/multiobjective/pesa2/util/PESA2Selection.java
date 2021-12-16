@@ -1,8 +1,7 @@
 package org.uma.jmetal.algorithm.multiobjective.pesa2.util;
 
-import org.uma.jmetal.operator.SelectionOperator;
+import org.uma.jmetal.operator.selection.SelectionOperator;
 import org.uma.jmetal.solution.Solution;
-import org.uma.jmetal.util.archive.impl.AdaptiveGridArchive;
 import org.uma.jmetal.util.pseudorandom.JMetalRandom;
 
 /**

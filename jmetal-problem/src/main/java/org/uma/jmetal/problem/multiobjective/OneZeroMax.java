@@ -1,11 +1,13 @@
 package org.uma.jmetal.problem.multiobjective;
 
-import org.uma.jmetal.problem.impl.AbstractBinaryProblem;
-import org.uma.jmetal.solution.BinarySolution;
-import org.uma.jmetal.solution.impl.DefaultBinarySolution;
-import org.uma.jmetal.util.JMetalException;
+import org.uma.jmetal.problem.binaryproblem.impl.AbstractBinaryProblem;
+import org.uma.jmetal.solution.binarysolution.BinarySolution;
+import org.uma.jmetal.solution.binarysolution.impl.DefaultBinarySolution;
+import org.uma.jmetal.util.errorchecking.JMetalException;
 
+import java.util.Arrays;
 import java.util.BitSet;
+import java.util.List;
 
 /**
  * Class representing problem OneZeroMax. The problem consist of maximizing the
@@ -29,7 +31,12 @@ public class OneZeroMax extends AbstractBinaryProblem {
   }
 
   @Override
-  protected int getBitsPerVariable(int index) {
+  public List<Integer> getListOfBitsPerVariable() {
+    return Arrays.asList(bits);
+  }
+
+  @Override
+  public int getBitsFromVariable(int index) {
   	if (index != 0) {
   		throw new JMetalException("Problem OneZeroMax has only a variable. Index = " + index) ;
   	}
@@ -38,19 +45,19 @@ public class OneZeroMax extends AbstractBinaryProblem {
 
   @Override
   public BinarySolution createSolution() {
-    return new DefaultBinarySolution(this) ;
+    return new DefaultBinarySolution(getListOfBitsPerVariable(), getNumberOfObjectives()) ;
   }
 
   /** Evaluate() method */
   @Override
-    public void evaluate(BinarySolution solution) {
+    public BinarySolution evaluate(BinarySolution solution) {
     int counterOnes;
     int counterZeroes;
 
     counterOnes = 0;
     counterZeroes = 0;
 
-    BitSet bitset = solution.getVariableValue(0) ;
+    BitSet bitset = solution.variables().get(0) ;
 
     for (int i = 0; i < bitset.length(); i++) {
       if (bitset.get(i)) {
@@ -61,7 +68,9 @@ public class OneZeroMax extends AbstractBinaryProblem {
     }
 
     // OneZeroMax is a maximization problem: multiply by -1 to minimize
-    solution.setObjective(0, -1.0 * counterOnes);
-    solution.setObjective(1, -1.0 * counterZeroes);
+    solution.objectives()[0] = -1.0 * counterOnes ;
+    solution.objectives()[1] = -1.0 * counterZeroes ;
+
+    return solution ;
   }
 }

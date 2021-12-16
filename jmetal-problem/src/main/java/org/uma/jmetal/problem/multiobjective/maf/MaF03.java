@@ -1,13 +1,15 @@
 package org.uma.jmetal.problem.multiobjective.maf;
 
+import org.uma.jmetal.problem.doubleproblem.impl.AbstractDoubleProblem;
+import org.uma.jmetal.solution.doublesolution.DoubleSolution;
+
 import java.util.ArrayList;
 import java.util.List;
-import org.uma.jmetal.problem.impl.AbstractDoubleProblem;
-import org.uma.jmetal.solution.DoubleSolution;
 
 /**
  * Class representing problem MaF03, convex DTLZ3
  */
+@SuppressWarnings("serial")
 public class MaF03 extends AbstractDoubleProblem {
 
   /**
@@ -38,8 +40,7 @@ public class MaF03 extends AbstractDoubleProblem {
       upper.add(1.0);
     }
 
-    setLowerLimit(lower);
-    setUpperLimit(upper);
+    setVariableBounds(lower, upper);
   }
 
   /**
@@ -48,16 +49,16 @@ public class MaF03 extends AbstractDoubleProblem {
    * @param solution The solution to evaluate
    */
   @Override
-  public void evaluate(DoubleSolution solution) {
+  public DoubleSolution evaluate(DoubleSolution solution) {
 
-    int numberOfVariables = solution.getNumberOfVariables();
-    int numberOfObjectives = solution.getNumberOfObjectives();
+    int numberOfVariables = solution.variables().size();
+    int numberOfObjectives = solution.objectives().length;
 
     double[] x = new double[numberOfVariables];
     double[] f = new double[numberOfObjectives];
 
     for (int i = 0; i < numberOfVariables; i++) {
-      x[i] = solution.getVariableValue(i);
+      x[i] = solution.variables().get(i);
     }
 
     double g = 0;
@@ -77,7 +78,9 @@ public class MaF03 extends AbstractDoubleProblem {
     f[0] = Math.pow(subf1 * Math.cos(Math.PI * x[numberOfObjectives - 2] / 2) * subf3, 4);
 
     for (int i = 0; i < numberOfObjectives; i++) {
-      solution.setObjective(i, f[i]);
+      solution.objectives()[i] = f[i];
     }
+
+    return solution ;
   }
 }

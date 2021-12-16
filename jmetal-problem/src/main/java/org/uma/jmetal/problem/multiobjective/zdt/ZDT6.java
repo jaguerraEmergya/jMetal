@@ -1,40 +1,17 @@
-//  ZDT6.java
-//
-//  Author:
-//       Antonio J. Nebro <antonio@lcc.uma.es>
-//       Juan J. Durillo <durillo@lcc.uma.es>
-//
-//  Copyright (c) 2011 Antonio J. Nebro, Juan J. Durillo
-//
-
-
-
-
-//
-
-
-
-
-// 
-
-
-
 package org.uma.jmetal.problem.multiobjective.zdt;
 
-import org.uma.jmetal.problem.impl.AbstractDoubleProblem;
-import org.uma.jmetal.solution.DoubleSolution;
-
-import java.util.ArrayList;
-import java.util.List;
+import org.uma.jmetal.solution.doublesolution.DoubleSolution;
 
 /**
- * Class representing problem ZDT6
+ * Class representing problem ZDT6 Difined in E. Zitzler, K. Deb, and L. Thiele, "Comparison of
+ * Multiobjective Evolutionary Algorithms: Empirical Results," Evolutionary Computation, vol. 8, no.
+ * 2, pp. 173-195, 2000, doi: 10.1162/106365600568202.
  */
 @SuppressWarnings("serial")
-public class ZDT6 extends AbstractDoubleProblem {
+public class ZDT6 extends ZDT1 {
 
   /** Constructor. Creates a default instance of problem ZDT6 (10 decision variables) */
-  public ZDT6()  {
+  public ZDT6() {
     this(10);
   }
 
@@ -44,34 +21,25 @@ public class ZDT6 extends AbstractDoubleProblem {
    * @param numberOfVariables Number of variables
    */
   public ZDT6(Integer numberOfVariables) {
-    setNumberOfVariables(numberOfVariables);
-    setNumberOfObjectives(2);
+    super(numberOfVariables);
     setName("ZDT6");
-
-    List<Double> lowerLimit = new ArrayList<>(getNumberOfVariables()) ;
-    List<Double> upperLimit = new ArrayList<>(getNumberOfVariables()) ;
-
-    for (int i = 0; i < getNumberOfVariables(); i++) {
-      lowerLimit.add(0.0);
-      upperLimit.add(1.0);
-    }
-
-    setLowerLimit(lowerLimit);
-    setUpperLimit(upperLimit);
   }
 
   /** Evaluate() method */
-  public void evaluate(DoubleSolution solution) {
-    double[] f = new double[getNumberOfObjectives()];
+  public DoubleSolution evaluate(DoubleSolution solution) {
+    double[] f = new double[solution.objectives().length];
 
-    double x1 = solution.getVariableValue(0);
-    f[0] = 1.0 - Math.exp((-4.0) * x1) * Math.pow(Math.sin(6.0 * Math.PI * x1), 6.0);
+    double x1;
+    x1 = solution.variables().get(0);
+    f[0] = 1 - Math.exp(-4 * x1) * Math.pow(Math.sin(6 * Math.PI * x1), 6);
     double g = this.evalG(solution);
     double h = this.evalH(f[0], g);
     f[1] = h * g;
 
-    solution.setObjective(0, f[0]);
-    solution.setObjective(1, f[1]);
+    solution.objectives()[0] = f[0];
+    solution.objectives()[1] = f[1];
+
+    return solution ;
   }
 
   /**
@@ -79,12 +47,12 @@ public class ZDT6 extends AbstractDoubleProblem {
    *
    * @param solution Solution
    */
-  public double evalG(DoubleSolution solution) {
+  protected double evalG(DoubleSolution solution) {
     double g = 0.0;
-    for (int var = 1; var < solution.getNumberOfVariables(); var++) {
-      g += solution.getVariableValue(var);
+    for (int var = 1; var < solution.variables().size(); var++) {
+      g += solution.variables().get(var);
     }
-    g = g / (solution.getNumberOfVariables() - 1);
+    g = g / (solution.variables().size() - 1);
     g = Math.pow(g, 0.25);
     g = 9.0 * g;
     g = 1.0 + g;
@@ -97,7 +65,7 @@ public class ZDT6 extends AbstractDoubleProblem {
    * @param f First argument of the function H.
    * @param g Second argument of the function H.
    */
-  public double evalH(double f, double g) {
+  protected double evalH(double f, double g) {
     return 1.0 - Math.pow((f / g), 2.0);
   }
 }

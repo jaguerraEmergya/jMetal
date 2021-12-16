@@ -1,6 +1,6 @@
 package org.uma.jmetal.util.fileoutput.impl;
 
-import org.uma.jmetal.util.JMetalException;
+import org.uma.jmetal.util.errorchecking.JMetalException;
 import org.uma.jmetal.util.fileoutput.FileOutputContext;
 
 import java.io.BufferedWriter;
@@ -15,14 +15,18 @@ import java.io.OutputStreamWriter;
  */
 @SuppressWarnings("serial")
 public class  DefaultFileOutputContext implements FileOutputContext {
-  private static final String DEFAULT_SEPARATOR = " " ;
+  private static final String DEFAULT_SEPARATOR = "\t" ;
 
   protected String fileName;
   protected String separator;
 
   public DefaultFileOutputContext(String fileName) {
+    this(fileName, DEFAULT_SEPARATOR) ;
+  }
+
+  public DefaultFileOutputContext(String fileName, String separator) {
     this.fileName = fileName ;
-    this.separator = DEFAULT_SEPARATOR ;
+    this.separator = separator ;
   }
 
   @Override

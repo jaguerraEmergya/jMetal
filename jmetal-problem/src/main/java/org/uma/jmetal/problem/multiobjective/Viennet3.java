@@ -1,7 +1,7 @@
 package org.uma.jmetal.problem.multiobjective;
 
-import org.uma.jmetal.problem.impl.AbstractDoubleProblem;
-import org.uma.jmetal.solution.DoubleSolution;
+import org.uma.jmetal.problem.doubleproblem.impl.AbstractDoubleProblem;
+import org.uma.jmetal.solution.doublesolution.DoubleSolution;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -30,20 +30,19 @@ public class Viennet3 extends AbstractDoubleProblem {
       upperLimit.add(3.0);
     }
 
-    setLowerLimit(lowerLimit);
-    setUpperLimit(upperLimit);
+    setVariableBounds(lowerLimit, upperLimit);
   }
 
   /** Evaluate() method */
   @Override
-  public void evaluate(DoubleSolution solution) {
+  public DoubleSolution evaluate(DoubleSolution solution) {
     int numberOfVariables = getNumberOfVariables() ;
 
-    double[] f = new double[getNumberOfObjectives()];
+    double[] f = new double[solution.objectives().length];
     double[] x = new double[numberOfVariables] ;
 
     for (int i = 0; i < numberOfVariables; i++) {
-      x[i] = solution.getVariableValue(i) ;
+      x[i] = solution.variables().get(i) ;
     }
                  
     f[0] = 0.5 * (x[0]*x[0] + x[1]*x[1]) + Math.sin(x[0]*x[0] + x[1]*x[1]) ;
@@ -58,8 +57,10 @@ public class Viennet3 extends AbstractDoubleProblem {
           Math.exp(-(x[0]*x[0])-(x[1]*x[1])) ;
 
         
-    for (int i = 0; i < getNumberOfObjectives(); i++)
-      solution.setObjective(i,f[i]);        
+    for (int i = 0; i < solution.objectives().length; i++)
+      solution.objectives()[i] = f[i];
+
+    return solution ;
   }
 }
 

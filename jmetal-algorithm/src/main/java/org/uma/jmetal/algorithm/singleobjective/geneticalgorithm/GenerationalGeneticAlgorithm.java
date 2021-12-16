@@ -1,9 +1,9 @@
 package org.uma.jmetal.algorithm.singleobjective.geneticalgorithm;
 
 import org.uma.jmetal.algorithm.impl.AbstractGeneticAlgorithm;
-import org.uma.jmetal.operator.CrossoverOperator;
-import org.uma.jmetal.operator.MutationOperator;
-import org.uma.jmetal.operator.SelectionOperator;
+import org.uma.jmetal.operator.crossover.CrossoverOperator;
+import org.uma.jmetal.operator.mutation.MutationOperator;
+import org.uma.jmetal.operator.selection.SelectionOperator;
 import org.uma.jmetal.problem.Problem;
 import org.uma.jmetal.solution.Solution;
 import org.uma.jmetal.util.comparator.ObjectiveComparator;
@@ -28,8 +28,8 @@ public class GenerationalGeneticAlgorithm<S extends Solution<?>> extends Abstrac
    * Constructor
    */
   public GenerationalGeneticAlgorithm(Problem<S> problem, int maxEvaluations, int populationSize,
-      CrossoverOperator<S> crossoverOperator, MutationOperator<S> mutationOperator,
-      SelectionOperator<List<S>, S> selectionOperator, SolutionListEvaluator<S> evaluator) {
+                                      CrossoverOperator<S> crossoverOperator, MutationOperator<S> mutationOperator,
+                                      SelectionOperator<List<S>, S> selectionOperator, SolutionListEvaluator<S> evaluator) {
     super(problem);
     this.maxEvaluations = maxEvaluations;
     this.setMaxPopulationSize(populationSize);
@@ -48,10 +48,10 @@ public class GenerationalGeneticAlgorithm<S extends Solution<?>> extends Abstrac
   }
 
   @Override protected List<S> replacement(List<S> population, List<S> offspringPopulation) {
-    Collections.sort(population, comparator);
+    population.sort(comparator);
     offspringPopulation.add(population.get(0));
     offspringPopulation.add(population.get(1));
-    Collections.sort(offspringPopulation, comparator) ;
+    offspringPopulation.sort(comparator);
     offspringPopulation.remove(offspringPopulation.size() - 1);
     offspringPopulation.remove(offspringPopulation.size() - 1);
 
@@ -65,7 +65,7 @@ public class GenerationalGeneticAlgorithm<S extends Solution<?>> extends Abstrac
   }
 
   @Override public S getResult() {
-    Collections.sort(getPopulation(), comparator) ;
+    getPopulation().sort(comparator);
     return getPopulation().get(0);
   }
 
