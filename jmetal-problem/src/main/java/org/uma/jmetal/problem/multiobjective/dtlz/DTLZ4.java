@@ -1,8 +1,8 @@
 package org.uma.jmetal.problem.multiobjective.dtlz;
 
-import org.uma.jmetal.problem.doubleproblem.impl.AbstractDoubleProblem;
-import org.uma.jmetal.solution.doublesolution.DoubleSolution;
-import org.uma.jmetal.util.errorchecking.JMetalException;
+import org.uma.jmetal.problem.impl.AbstractDoubleProblem;
+import org.uma.jmetal.solution.DoubleSolution;
+import org.uma.jmetal.util.JMetalException;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -38,22 +38,23 @@ public class DTLZ4 extends AbstractDoubleProblem {
       upperLimit.add(1.0);
     }
 
-    setVariableBounds(lowerLimit, upperLimit);
+    setLowerLimit(lowerLimit);
+    setUpperLimit(upperLimit);
   }
 
   /** Evaluate() method */
-  public DoubleSolution evaluate(DoubleSolution solution) {
+  public void evaluate(DoubleSolution solution) {
     int numberOfVariables = getNumberOfVariables();
-    int numberOfObjectives = solution.objectives().length ;
+    int numberOfObjectives = getNumberOfObjectives() ;
     double alpha = 100.0;
 
     double[] f = new double[numberOfObjectives];
     double[] x = new double[numberOfVariables] ;
 
-    int k = getNumberOfVariables() - solution.objectives().length + 1;
+    int k = getNumberOfVariables() - getNumberOfObjectives() + 1;
 
     for (int i = 0; i < numberOfVariables; i++) {
-      x[i] = solution.variables().get(i) ;
+      x[i] = solution.getVariableValue(i) ;
     }
 
     double g = 0.0;
@@ -76,9 +77,7 @@ public class DTLZ4 extends AbstractDoubleProblem {
     }
 
     for (int i = 0; i < numberOfObjectives; i++) {
-      solution.objectives()[i] = f[i];
+      solution.setObjective(i, f[i]);
     }
-
-    return solution ;
   }
 }

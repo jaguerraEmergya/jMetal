@@ -3,15 +3,15 @@ package org.uma.jmetal.algorithm.multiobjective.nsgaii;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-import org.uma.jmetal.operator.crossover.CrossoverOperator;
-import org.uma.jmetal.operator.crossover.impl.SBXCrossover;
-import org.uma.jmetal.operator.mutation.MutationOperator;
-import org.uma.jmetal.operator.mutation.impl.PolynomialMutation;
-import org.uma.jmetal.operator.selection.SelectionOperator;
+import org.uma.jmetal.operator.CrossoverOperator;
+import org.uma.jmetal.operator.MutationOperator;
+import org.uma.jmetal.operator.SelectionOperator;
+import org.uma.jmetal.operator.impl.crossover.SBXCrossover;
+import org.uma.jmetal.operator.impl.mutation.PolynomialMutation;
 import org.uma.jmetal.problem.Problem;
-import org.uma.jmetal.solution.doublesolution.DoubleSolution;
-import org.uma.jmetal.util.errorchecking.JMetalException;
-import org.uma.jmetal.util.evaluator.impl.MultiThreadedSolutionListEvaluator;
+import org.uma.jmetal.solution.DoubleSolution;
+import org.uma.jmetal.util.JMetalException;
+import org.uma.jmetal.util.evaluator.impl.MultithreadedSolutionListEvaluator;
 
 import java.util.List;
 
@@ -45,8 +45,7 @@ public class NSGAIIBuilderTest {
     double mutationDistributionIndex = 20.0 ;
     mutation = new PolynomialMutation(mutationProbability, mutationDistributionIndex) ;
 
-    int populationSize  = 100 ;
-    builder = new NSGAIIBuilder<DoubleSolution>(problem, crossover, mutation, populationSize);
+    builder = new NSGAIIBuilder<DoubleSolution>(problem, crossover, mutation);
   }
 
   @After public void cleanup() {
@@ -77,10 +76,14 @@ public class NSGAIIBuilderTest {
     assertEquals(20.0, mutation.getDistributionIndex(), EPSILON);
   }
 
-  //@Test(expected = JMetalException.class)
-  //public void setNegativePopulationSize() {
-  //  builder.setPopulationSize(-1);
-  //}
+  @Test public void setValidPopulationSize() {
+    builder.setPopulationSize(150);
+    assertEquals(150, builder.getPopulationSize());
+  }
+
+  @Test(expected = JMetalException.class) public void setNegativePopulationSize() {
+    builder.setPopulationSize(-1);
+  }
 
   @Test public void setPositiveMaxNumberOfIterations() {
     builder.setMaxEvaluations(20000);
@@ -104,8 +107,8 @@ public class NSGAIIBuilderTest {
   }
 
   @Test public void setNewEvaluator() {
-    MultiThreadedSolutionListEvaluator<DoubleSolution> evaluator =
-        new MultiThreadedSolutionListEvaluator<DoubleSolution>(2);
+    MultithreadedSolutionListEvaluator<DoubleSolution> evaluator =
+        new MultithreadedSolutionListEvaluator<DoubleSolution>(2, problem);
     assertNotEquals(evaluator, builder.getSolutionListEvaluator());
     builder.setSolutionListEvaluator(evaluator);
     assertEquals(evaluator, builder.getSolutionListEvaluator());

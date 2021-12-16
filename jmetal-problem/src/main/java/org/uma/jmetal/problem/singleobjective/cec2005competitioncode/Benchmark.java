@@ -47,8 +47,8 @@
 
 package org.uma.jmetal.problem.singleobjective.cec2005competitioncode;
 
+import org.uma.jmetal.util.JMetalException;
 import org.uma.jmetal.util.JMetalLogger;
-import org.uma.jmetal.util.errorchecking.JMetalException;
 
 import java.io.BufferedReader;
 import java.io.FileInputStream;
@@ -596,8 +596,8 @@ public class Benchmark {
           .getConstructor(test_func_arg_types)
           .newInstance(
             new Object[] {
-              Integer.valueOf(dimension),
-              Double.valueOf(m_biases[func_num - 1])
+              new Integer(dimension),
+              new Double(m_biases[func_num - 1])
             }
           );
     } catch (Exception e) {

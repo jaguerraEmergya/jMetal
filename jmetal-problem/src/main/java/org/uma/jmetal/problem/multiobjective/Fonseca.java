@@ -1,7 +1,7 @@
 package org.uma.jmetal.problem.multiobjective;
 
-import org.uma.jmetal.problem.doubleproblem.impl.AbstractDoubleProblem;
-import org.uma.jmetal.solution.doublesolution.DoubleSolution;
+import org.uma.jmetal.problem.impl.AbstractDoubleProblem;
+import org.uma.jmetal.solution.DoubleSolution;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -25,19 +25,20 @@ public class Fonseca extends AbstractDoubleProblem {
       upperLimit.add(4.0);
     }
 
-    setVariableBounds(lowerLimit, upperLimit);
+    setLowerLimit(lowerLimit);
+    setUpperLimit(upperLimit);
   }
 
   /** Evaluate() method */
   @Override
-  public DoubleSolution evaluate(DoubleSolution solution) {
+  public void evaluate(DoubleSolution solution) {
     int numberOfVariables = getNumberOfVariables() ;
 
-    double[] f = new double[solution.objectives().length];
+    double[] f = new double[getNumberOfObjectives()];
     double[] x = new double[numberOfVariables] ;
 
     for (int i = 0; i < numberOfVariables; i++) {
-      x[i] = solution.variables().get(i) ;
+      x[i] = solution.getVariableValue(i) ;
     }
 
     double sum1 = 0.0;
@@ -54,9 +55,7 @@ public class Fonseca extends AbstractDoubleProblem {
     double exp2 = StrictMath.exp((-1.0) * sum2);
     f[1] = 1 - exp2;
 
-    solution.objectives()[0] = f[0];
-    solution.objectives()[1] = f[1];
-
-    return solution ;
+    solution.setObjective(0, f[0]);
+    solution.setObjective(1, f[1]);
   }
 }

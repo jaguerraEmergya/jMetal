@@ -3,7 +3,14 @@ package org.uma.jmetal.algorithm.multiobjective.mombi.util;
 import org.uma.jmetal.solution.Solution;
 import org.uma.jmetal.util.solutionattribute.impl.GenericSolutionAttribute;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.TreeMap;
 
 @SuppressWarnings("serial")
 public class R2Ranking<S extends Solution<?>> extends GenericSolutionAttribute<S, R2SolutionData> {
@@ -21,7 +28,7 @@ public class R2Ranking<S extends Solution<?>> extends GenericSolutionAttribute<S
   public R2Ranking<S> computeRanking(List<S> population) {
 
     for (S solution : population) {
-      solution.attributes().put(getAttributeIdentifier(), new R2SolutionData());
+      solution.setAttribute(getAttributeIdentifier(), new R2SolutionData());
     }
 
     for (int i = 0; i < this.utilityFunctions.getSize(); i++) {

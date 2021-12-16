@@ -1,22 +1,19 @@
 package org.uma.jmetal.algorithm.multiobjective.moead;
 
 import org.uma.jmetal.algorithm.multiobjective.moead.util.MOEADUtils;
-import org.uma.jmetal.operator.crossover.CrossoverOperator;
-import org.uma.jmetal.operator.mutation.MutationOperator;
+import org.uma.jmetal.operator.CrossoverOperator;
+import org.uma.jmetal.operator.MutationOperator;
 import org.uma.jmetal.problem.Problem;
-import org.uma.jmetal.solution.doublesolution.DoubleSolution;
-import org.uma.jmetal.util.point.impl.IdealPoint;
-import org.uma.jmetal.util.point.impl.NadirPoint;
-import org.uma.jmetal.util.ranking.Ranking;
-import org.uma.jmetal.util.ranking.impl.FastNonDominatedSortRanking;
+import org.uma.jmetal.solution.DoubleSolution;
+import org.uma.jmetal.util.solutionattribute.Ranking;
+import org.uma.jmetal.util.solutionattribute.impl.DominanceRanking;
 
 import java.util.ArrayList;
 import java.util.List;
 
-@SuppressWarnings("serial")
 public class MOEADD<S extends DoubleSolution> extends AbstractMOEAD<S> {
 
-  protected Ranking<S> ranking;
+  protected Ranking ranking;
   protected int[][] rankIdx;      // index matrix for the non-domination levels
   protected int[][] subregionIdx;    // index matrix for subregion record
   protected double[][] subregionDist;  // distance matrix for perpendicular distance
@@ -40,13 +37,13 @@ public class MOEADD<S extends DoubleSolution> extends AbstractMOEAD<S> {
   public void run() {
 
     evaluations = 0;
-    population = new ArrayList<>(populationSize);
+    population = new ArrayList(populationSize);
 
     neighborhood = new int[populationSize][neighborSize];
     lambda = new double[populationSize][problem.getNumberOfObjectives()];
 
-    idealPoint = new IdealPoint(problem.getNumberOfObjectives()); // ideal point for Pareto-based population
-    nadirPoint = new NadirPoint(problem.getNumberOfObjectives()); // nadir point for Pareto-based population
+    idealPoint = new double[problem.getNumberOfObjectives()]; // ideal point for Pareto-based population
+    nadirPoint = new double[problem.getNumberOfObjectives()]; // nadir point for Pareto-based population
 
     rankIdx = new int[populationSize][populationSize];
     subregionIdx = new int[populationSize][populationSize];
@@ -56,19 +53,18 @@ public class MOEADD<S extends DoubleSolution> extends AbstractMOEAD<S> {
     initializeUniformWeight();
     initializeNeighborhood();
     initPopulation();
-    idealPoint.update(population);
-    nadirPoint.update(population);
+    initializeIdealPoint();
+    initializeNadirPoint();
 
     // initialize the distance
     for (int i = 0; i < populationSize; i++) {
-      double distance = calculateDistance2(
-          population.get(i), lambda[i], idealPoint.getValues(), nadirPoint.getValues());
+      double distance = calculateDistance2(population.get(i), lambda[i], idealPoint, nadirPoint);
       subregionDist[i][i] = distance;
     }
 
     ranking = computeRanking(population);
-    for (int curRank = 0; curRank < ranking.getNumberOfSubFronts(); curRank++) {
-      List<S> front = ranking.getSubFront(curRank);
+    for (int curRank = 0; curRank < ranking.getNumberOfSubfronts(); curRank++) {
+      List<S> front = ranking.getSubfront(curRank);
       for (S s : front) {
         int position = this.population.indexOf(s);
         rankIdx[curRank][position] = 1;
@@ -101,10 +97,11 @@ public class MOEADD<S extends DoubleSolution> extends AbstractMOEAD<S> {
 
         evaluations++;
 
-        idealPoint.update(child.objectives());
-        nadirPoint.update(child.objectives());
+        updateIdealPoint(child);
+        updateNadirPoint(child);
         updateArchive(child);
-      }
+        //System.out.println(evaluations);
+      } // for
     } while (evaluations < maxEvaluations);
   }
 
@@ -119,12 +116,23 @@ public class MOEADD<S extends DoubleSolution> extends AbstractMOEAD<S> {
       population.add(newSolution);
       subregionIdx[i][i] = 1;
     }
-  }
+  } // initPopulation
+
+  void RefreshNadirPoint() {
+    for (int i = 0; i < problem.getNumberOfObjectives(); i++) {
+      nadirPoint[i] = -1.0e+30;
+    }
+
+    for (int i = 0; i < populationSize; i++) {
+      updateNadirPoint(population.get(i));
+    }
+  } // initNadirPoint
 
   /**
    * Select two parents for reproduction
    */
   public List<S> matingSelection(int cid, int type) {
+
     int rnd1, rnd2;
 
     List<S> parents = new ArrayList<>(2);
@@ -215,8 +223,8 @@ public class MOEADD<S extends DoubleSolution> extends AbstractMOEAD<S> {
   public void updateArchive(S indiv) {
 
     // find the location of 'indiv'
-    setLocation(indiv, idealPoint.getValues(), nadirPoint.getValues());
-    int location = (int) indiv.attributes().get("region");
+    setLocation(indiv, idealPoint, nadirPoint);
+    int location = (int) indiv.getAttribute("region");
 
     numRanks = nondominated_sorting_add(indiv);
 
@@ -234,7 +242,7 @@ public class MOEADD<S extends DoubleSolution> extends AbstractMOEAD<S> {
             lastFront.add((S) population.get(i));
           }
         }
-        if ((ranking.getRank(indiv)) == (numRanks - 1)) {
+        if (((int) indiv.getAttribute(ranking.getAttributeIdentifier())) == (numRanks - 1)) {
 //        if (rankSolution.getOrDefault(indiv, 0) == (numRanks - 1)) {
           frontSize++;
           lastFront.add(indiv);
@@ -259,8 +267,8 @@ public class MOEADD<S extends DoubleSolution> extends AbstractMOEAD<S> {
         if (curNC == 1) {  // the subregion only has the solution 'targetIdx', keep solution 'targetIdx'
           deleteCrowdRegion2(indiv, location);
         } else {  // the subregion contains some other solutions, drop solution 'targetIdx'
-          int indivRank = ranking.getRank(indiv);
-          int targetRank = ranking.getRank(population.get(targetIdx));
+          int indivRank = (int) indiv.getAttribute(ranking.getAttributeIdentifier());
+          int targetRank = (int) population.get(targetIdx).getAttribute(ranking.getAttributeIdentifier());
           rankIdx[targetRank][targetIdx] = 0;
           rankIdx[indivRank][targetIdx] = 1;
 
@@ -376,10 +384,10 @@ public class MOEADD<S extends DoubleSolution> extends AbstractMOEAD<S> {
                 nondominated_sorting_delete(indiv);
               } else {
                 //indiv.getRank();
-                int indivRank = ranking.getRank(indiv);
+                int indivRank = (int) indiv.getAttribute(ranking.getAttributeIdentifier());
 
                 //int targetRank = ((DoubleSolution) population.get(idxArray[targetIdx])).getRank();
-                int targetRank = ranking.getRank(population.get(idxArray[targetIdx])) ;
+                int targetRank = (int) population.get(idxArray[targetIdx]).getAttribute(ranking.getAttributeIdentifier());
 
                 rankIdx[targetRank][idxArray[targetIdx]] = 0;
                 rankIdx[indivRank][idxArray[targetIdx]] = 1;
@@ -407,7 +415,7 @@ public class MOEADD<S extends DoubleSolution> extends AbstractMOEAD<S> {
 
     // find the non-domination level of 'indiv'
     //int indivRank = indiv.getRank();
-    int indivRank = ranking.getRank(indiv);
+    int indivRank = (int) indiv.getAttribute(ranking.getAttributeIdentifier());
 
     ArrayList<Integer> curLevel = new ArrayList<>();  // used to keep the solutions in the current non-domination level
     ArrayList<Integer> dominateList = new ArrayList<>();  // used to keep the solutions need to be moved
@@ -437,7 +445,7 @@ public class MOEADD<S extends DoubleSolution> extends AbstractMOEAD<S> {
               rankIdx[investigateRank][i] = 0;
               rankIdx[investigateRank - 1][i] = 1;
               //((DoubleSolution) population.get(i)).setRank(investigateRank - 1);
-              population.get(i).attributes().put(ranking.getAttributedId(), investigateRank - 1);
+              population.get(i).setAttribute(ranking.getAttributeIdentifier(), investigateRank - 1);
             }
           }
         }
@@ -476,7 +484,7 @@ public class MOEADD<S extends DoubleSolution> extends AbstractMOEAD<S> {
                   rankIdx[investigateRank][j] = 0;
                   rankIdx[investigateRank - 1][j] = 1;
                   //((DoubleSolution) population.get(j)).setRank(investigateRank - 1);
-                  population.get(j).attributes().put(ranking.getAttributedId(), investigateRank - 1);
+                  population.get(j).setAttribute(ranking.getAttributeIdentifier(), investigateRank - 1);
                 }
               }
             }
@@ -519,11 +527,11 @@ public class MOEADD<S extends DoubleSolution> extends AbstractMOEAD<S> {
       level = i;
       if (flag == 1) {  // 'indiv' is non-dominated with all solutions in the ith non-domination level, then 'indiv' belongs to the ith level
         //indiv.setRank(i - 1);
-        indiv.attributes().put(ranking.getAttributedId(), i - 1);
+        indiv.setAttribute(ranking.getAttributeIdentifier(), i - 1);
         return num_ranks;
       } else if (flag == 2) {  // 'indiv' dominates some solutions in the ith level, but is non-dominated with some others, then 'indiv' belongs to the ith level, and move the dominated solutions to the next level
         //indiv.setRank(i - 1);
-        indiv.attributes().put(ranking.getAttributedId(), i - 1);
+        indiv.setAttribute(ranking.getAttributeIdentifier(), i - 1);
         int prevRank = i - 1;
 
         // process the solutions belong to 'prevRank'th level and are dominated by 'indiv' ==> move them to 'prevRank+1'th level and find the solutions dominated by them
@@ -535,7 +543,7 @@ public class MOEADD<S extends DoubleSolution> extends AbstractMOEAD<S> {
           rankIdx[prevRank][curIdx] = 0;
           rankIdx[newRank][curIdx] = 1;
           //((DoubleSolution) population.get(curIdx)).setRank(newRank);
-          population.get(curIdx).attributes().put(ranking.getAttributedId(), newRank);
+          population.get(curIdx).setAttribute(ranking.getAttributeIdentifier(), newRank);
         }
         for (int j = 0; j < populationSize; j++) {
           if (rankIdx[newRank][j] == 1) {
@@ -567,7 +575,7 @@ public class MOEADD<S extends DoubleSolution> extends AbstractMOEAD<S> {
               rankIdx[prevRank][curIdx] = 0;
               rankIdx[newRank][curIdx] = 1;
               //((DoubleSolution) population.get(curIdx)).setRank(newRank);
-              population.get(curIdx).attributes().put(ranking.getAttributedId(), newRank);
+              population.get(curIdx).setAttribute(ranking.getAttributeIdentifier(), newRank);
             }
             for (int j = 0; j < populationSize; j++) {
               if (rankIdx[newRank][j] == 1) {
@@ -628,10 +636,10 @@ public class MOEADD<S extends DoubleSolution> extends AbstractMOEAD<S> {
               for (int j = 0; j < level_size; j++) {
                 curIdx = tempRecord[k][j];
                 //tempRank = ((DoubleSolution) population.get(curIdx)).getRank();
-                tempRank = (int) population.get(curIdx).attributes().get(ranking.getAttributedId());
+                tempRank = (int) population.get(curIdx).getAttribute(ranking.getAttributeIdentifier());
                 newRank = tempRank + 1;
                 //((DoubleSolution) population.get(curIdx)).setRank(newRank);
-                population.get(curIdx).attributes().put(ranking.getAttributedId(), newRank);
+                population.get(curIdx).setAttribute(ranking.getAttributeIdentifier(), newRank);
                 rankIdx[tempRank][curIdx] = 0;
                 rankIdx[newRank][curIdx] = 1;
               }
@@ -683,7 +691,7 @@ public class MOEADD<S extends DoubleSolution> extends AbstractMOEAD<S> {
 
       } else {  // (flag == 4) if 'indiv' dominates all solutions in the ith level, solutions in the current level and beyond move their current next levels
         //indiv.setRank(i - 1);
-        indiv.attributes().put(ranking.getAttributedId(), i - 1);
+        indiv.setAttribute(ranking.getAttributeIdentifier(), i - 1);
         i = i - 1;
         int remainSize = num_ranks - i;
         int[][] tempRecord = new int[remainSize][populationSize];
@@ -703,7 +711,7 @@ public class MOEADD<S extends DoubleSolution> extends AbstractMOEAD<S> {
 
         k = 0;
         //i = indiv.getRank();
-        i = (int) indiv.attributes().get(ranking.getAttributedId());
+        i = (int) indiv.getAttribute(ranking.getAttributeIdentifier());
         while (i < num_ranks) {
           int level_size = frontSize.get(i);
 
@@ -712,10 +720,10 @@ public class MOEADD<S extends DoubleSolution> extends AbstractMOEAD<S> {
           for (int j = 0; j < level_size; j++) {
             curIdx = tempRecord[k][j];
             //curRank = ((DoubleSolution) population.get(curIdx)).getRank();
-            curRank = (int) population.get(curIdx).attributes().get(ranking.getAttributedId());
+            curRank = (int) population.get(curIdx).getAttribute(ranking.getAttributeIdentifier());
             newRank = curRank + 1;
             //((DoubleSolution) population.get(curIdx)).setRank(newRank);
-            population.get(curIdx).attributes().put(ranking.getAttributedId(), newRank);
+            population.get(curIdx).setAttribute(ranking.getAttributeIdentifier(), newRank);
 
             rankIdx[curRank][curIdx] = 0;
             rankIdx[newRank][curIdx] = 1;
@@ -732,17 +740,17 @@ public class MOEADD<S extends DoubleSolution> extends AbstractMOEAD<S> {
     switch (flag) {
       case 1:
         //indiv.setRank(level);
-        indiv.attributes().put(ranking.getAttributedId(), level);
+        indiv.setAttribute(ranking.getAttributeIdentifier(), level);
         break;
       case 2:
         //indiv.setRank(level);
-        indiv.attributes().put(ranking.getAttributedId(), level);
+        indiv.setAttribute(ranking.getAttributeIdentifier(), level);
         int curIdx;
         int tempSize = dominateList.size();
         for (int i = 0; i < tempSize; i++) {
           curIdx = dominateList.get(i);
           //((DoubleSolution) population.get(curIdx)).setRank(level + 1);
-          population.get(curIdx).attributes().put(ranking.getAttributedId(), level + 1);
+          population.get(curIdx).setAttribute(ranking.getAttributeIdentifier(), level + 1);
 
           rankIdx[level][curIdx] = 0;
           rankIdx[level + 1][curIdx] = 1;
@@ -751,17 +759,17 @@ public class MOEADD<S extends DoubleSolution> extends AbstractMOEAD<S> {
         break;
       case 3:
         //indiv.setRank(level + 1);
-        indiv.attributes().put(ranking.getAttributedId(), level + 1);
+        indiv.setAttribute(ranking.getAttributeIdentifier(), level + 1);
         num_ranks++;
         break;
       default:
         //indiv.setRank(level);
-        indiv.attributes().put(ranking.getAttributedId(), level);
+        indiv.setAttribute(ranking.getAttributeIdentifier(), level);
         for (int i = 0; i < populationSize; i++) {
           if (rankIdx[level][i] == 1) {
             //((DoubleSolution) population.get(i)).setRank(level + 1);
 
-            population.get(i).attributes().put(ranking.getAttributedId(), level + 1);
+            population.get(i).setAttribute(ranking.getAttributeIdentifier(), level + 1);
             rankIdx[level][i] = 0;
             rankIdx[level + 1][i] = 1;
           }
@@ -823,11 +831,11 @@ public class MOEADD<S extends DoubleSolution> extends AbstractMOEAD<S> {
     // find the solution with the largest rank
     ArrayList<Integer> maxRankList = new ArrayList<>();
     //int maxRank = ((DoubleSolution) population.get(indList.get(0))).getRank();
-    int maxRank = (int) population.get(indList.get(0)).attributes().get(ranking.getAttributedId());
+    int maxRank = (int) population.get(indList.get(0)).getAttribute(ranking.getAttributeIdentifier());
     maxRankList.add(indList.get(0));
     for (int i = 1; i < indList.size(); i++) {
       //int curRank = ((DoubleSolution) population.get(indList.get(i))).getRank();
-      int curRank = (int) population.get(indList.get(i)).attributes().get(ranking.getAttributedId());
+      int curRank = (int) population.get(indList.get(i)).getAttribute(ranking.getAttributeIdentifier());
       if (curRank > maxRank) {
         maxRankList.clear();
         maxRank = curRank;
@@ -851,9 +859,9 @@ public class MOEADD<S extends DoubleSolution> extends AbstractMOEAD<S> {
     }
 
     //int indivRank = indiv.getRank();
-    int indivRank = (int) indiv.attributes().get(ranking.getAttributedId());
+    int indivRank = (int) indiv.getAttribute(ranking.getAttributeIdentifier());
     //int targetRank = ((DoubleSolution) population.get(targetIdx)).getRank();
-    int targetRank = (int) population.get(targetIdx).attributes().get(ranking.getAttributedId());
+    int targetRank = (int) population.get(targetIdx).getAttribute(ranking.getAttributeIdentifier());
     rankIdx[targetRank][targetIdx] = 0;
     rankIdx[indivRank][targetIdx] = 1;
 
@@ -936,16 +944,16 @@ public class MOEADD<S extends DoubleSolution> extends AbstractMOEAD<S> {
     // find the solution with the largest rank
     ArrayList<Integer> maxRankList = new ArrayList<>();
     //int maxRank = ((DoubleSolution) population.get(indList.get(0))).getRank();
-    int maxRank = (int) population.get(indList.get(0)).attributes().get(ranking.getAttributedId());
+    int maxRank = (int) population.get(indList.get(0)).getAttribute(ranking.getAttributeIdentifier());
     maxRankList.add(indList.get(0));
     for (int i = 1; i < indList.size(); i++) {
       int curRank;
       if (indList.get(i) == -1) {
         //curRank = indiv.getRank();
-        curRank = (int) indiv.attributes().get(ranking.getAttributedId());
+        curRank = (int) indiv.getAttribute(ranking.getAttributeIdentifier());
       } else {
         //curRank = ((DoubleSolution) population.get(indList.get(i))).getRank();
-        curRank = (int) population.get(indList.get(i)).attributes().get(ranking.getAttributedId());
+        curRank = (int) population.get(indList.get(i)).getAttribute(ranking.getAttributeIdentifier());
       }
 
       if (curRank > maxRank) {
@@ -986,9 +994,9 @@ public class MOEADD<S extends DoubleSolution> extends AbstractMOEAD<S> {
 
     } else {
       //int indivRank = indiv.getRank();
-      int indivRank = (int) indiv.attributes().get(ranking.getAttributedId());
+      int indivRank = (int) indiv.getAttribute(ranking.getAttributeIdentifier());
       //int targetRank = ((DoubleSolution) population.get(targetIdx)).getRank();
-      int targetRank = (int) population.get(targetIdx).attributes().get(ranking.getAttributedId());
+      int targetRank = (int) population.get(targetIdx).getAttribute(ranking.getAttributeIdentifier());
       rankIdx[targetRank][targetIdx] = 0;
       rankIdx[indivRank][targetIdx] = 1;
 
@@ -1260,7 +1268,7 @@ public class MOEADD<S extends DoubleSolution> extends AbstractMOEAD<S> {
       }
     }
     //indiv.setRegion(minIdx);
-    indiv.attributes().put("region", minIdx);
+    indiv.setAttribute("region", minIdx);
     //indiv.Set_associateDist(minDist);
 //        indiv.setAttribute(ATTRIBUTES.DIST, minDist);
 
@@ -1276,10 +1284,10 @@ public class MOEADD<S extends DoubleSolution> extends AbstractMOEAD<S> {
     int flag2 = 0;
 
     for (int i = 0; i < problem.getNumberOfObjectives(); i++) {
-      if (a.objectives()[i] < b.objectives()[i]) {
+      if (a.getObjective(i) < b.getObjective(i)) {
         flag1 = 1;
       } else {
-        if (a.objectives()[i] > b.objectives()[i]) {
+        if (a.getObjective(i) > b.getObjective(i)) {
           flag2 = 1;
         }
       }
@@ -1315,7 +1323,7 @@ public class MOEADD<S extends DoubleSolution> extends AbstractMOEAD<S> {
 
     // vecInd has been normalized to the range [0,1]
     for (int i = 0; i < problem.getNumberOfObjectives(); i++) {
-      vecInd[i] = (individual.objectives()[i] - z_[i]) / (nz_[i] - z_[i]);
+      vecInd[i] = (individual.getObjective(i) - z_[i]) / (nz_[i] - z_[i]);
     }
 
     scale = innerproduct(vecInd, lambda);
@@ -1342,7 +1350,7 @@ public class MOEADD<S extends DoubleSolution> extends AbstractMOEAD<S> {
 
     // difference between current point and reference point
     for (int i = 0; i < problem.getNumberOfObjectives(); i++) {
-      realA[i] = (indiv.objectives()[i] - z_[i]);
+      realA[i] = (indiv.getObjective(i) - z_[i]);
     }
 
     // distance along the line segment
@@ -1350,7 +1358,7 @@ public class MOEADD<S extends DoubleSolution> extends AbstractMOEAD<S> {
 
     // distance to the line segment
     for (int i = 0; i < problem.getNumberOfObjectives(); i++) {
-      realB[i] = (indiv.objectives()[i] - (z_[i] + d1 * lambda[i]));
+      realB[i] = (indiv.getObjective(i) - (z_[i] + d1 * lambda[i]));
     }
 
     double distance = norm_vector(realB);
@@ -1419,8 +1427,8 @@ public class MOEADD<S extends DoubleSolution> extends AbstractMOEAD<S> {
   }
 
   protected Ranking<S> computeRanking(List<S> solutionList) {
-    Ranking<S> ranking = new FastNonDominatedSortRanking<S>();
-    ranking.compute(solutionList);
+    Ranking<S> ranking = new DominanceRanking<>();
+    ranking.computeRanking(solutionList);
     return ranking;
   }
 

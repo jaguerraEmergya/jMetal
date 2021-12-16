@@ -1,17 +1,18 @@
 package org.uma.jmetal.algorithm.singleobjective.evolutionstrategy;
 
 import org.uma.jmetal.algorithm.impl.AbstractEvolutionStrategy;
-import org.uma.jmetal.operator.mutation.MutationOperator;
+import org.uma.jmetal.operator.MutationOperator;
 import org.uma.jmetal.problem.Problem;
 import org.uma.jmetal.solution.Solution;
 import org.uma.jmetal.util.comparator.ObjectiveComparator;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 
 /**
- * Class implementing a (mu , lambda) Evolution Strategy (lambda must be divisible by mu)
+ * Class implementing a (mu + lambda) Evolution Strategy (lambda must be divisible by mu)
  *
  * @author Antonio J. Nebro <antonio@lcc.uma.es>
  */
@@ -40,7 +41,7 @@ public class NonElitistEvolutionStrategy<S extends Solution<?>> extends Abstract
   }
 
   @Override protected void initProgress() {
-    evaluations = mu;
+    evaluations = 1;
   }
 
   @Override protected void updateProgress() {
@@ -94,7 +95,7 @@ public class NonElitistEvolutionStrategy<S extends Solution<?>> extends Abstract
 
   @Override protected List<S> replacement(List<S> population,
       List<S> offspringPopulation) {
-    offspringPopulation.sort(comparator);
+    Collections.sort(offspringPopulation, comparator) ;
 
     List<S> newPopulation = new ArrayList<>(mu);
     for (int i = 0; i < mu; i++) {

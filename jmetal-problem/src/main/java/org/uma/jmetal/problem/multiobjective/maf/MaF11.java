@@ -1,18 +1,16 @@
 package org.uma.jmetal.problem.multiobjective.maf;
 
-import org.uma.jmetal.problem.doubleproblem.impl.AbstractDoubleProblem;
-import org.uma.jmetal.solution.doublesolution.DoubleSolution;
-
 import java.util.ArrayList;
 import java.util.List;
+import org.uma.jmetal.problem.impl.AbstractDoubleProblem;
+import org.uma.jmetal.solution.DoubleSolution;
 
 /**
  * Class representing problem MaF11
  */
-@SuppressWarnings("serial")
 public class MaF11 extends AbstractDoubleProblem {
 
-  public int K11, L11;
+  public static int K11, L11;
 
   /**
    * Default constructor
@@ -47,7 +45,8 @@ public class MaF11 extends AbstractDoubleProblem {
       upper.add(2.0 * (var + 1));
     }
 
-    setVariableBounds(lower, upper);
+    setLowerLimit(lower);
+    setUpperLimit(upper);
   }
 
   /**
@@ -56,15 +55,15 @@ public class MaF11 extends AbstractDoubleProblem {
    * @param solution The solution to evaluate
    */
   @Override
-  public DoubleSolution evaluate(DoubleSolution solution) {
-    int numberOfVariables = solution.variables().size();
-    int numberOfObjectives = solution.objectives().length;
+  public void evaluate(DoubleSolution solution) {
+    int numberOfVariables = solution.getNumberOfVariables();
+    int numberOfObjectives = solution.getNumberOfObjectives();
 
     double[] x = new double[numberOfVariables];
     double[] f = new double[numberOfObjectives];
 
     for (int i = 0; i < numberOfVariables; i++) {
-      x[i] = solution.variables().get(i);
+      x[i] = solution.getVariableValue(i);
     }
 
     // evaluate zi,t1i,t2i,t3i,t4i,yi
@@ -125,8 +124,7 @@ public class MaF11 extends AbstractDoubleProblem {
         .cos(Math.PI * y[numberOfObjectives - 2] / 2));
 
     for (int i = 0; i < numberOfObjectives; i++) {
-      solution.objectives()[i] = f[i];
+      solution.setObjective(i, f[i]);
     }
-    return solution ;
   }
 }

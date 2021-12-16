@@ -1,15 +1,16 @@
 package org.uma.jmetal.algorithm.multiobjective.mombi.util;
 
 import org.uma.jmetal.solution.Solution;
-import org.uma.jmetal.util.errorchecking.JMetalException;
+import org.uma.jmetal.util.JMetalException;
 
-import java.io.*;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.StringTokenizer;
-
-import static java.lang.Double.parseDouble;
-import static java.lang.Integer.parseInt;
 
 
 
@@ -52,7 +53,7 @@ public abstract class AbstractUtilityFunctionsSet<S extends Solution<?>> impleme
 	}
 	
 	/**
-	 * Returns the number of components for all weight vectors
+	 * Returns the number of components for all weight vectors 
 	 */
 	public int getVectorSize() {
 		return this.vectorSize;
@@ -90,7 +91,7 @@ public abstract class AbstractUtilityFunctionsSet<S extends Solution<?>> impleme
 	public abstract Double evaluate(S solution, int vector);
 
 	/**
-	 * Reads a set of weight vectors from a file.
+	 * Reads a set of weight vectors from a file. 
 	 * The expected format for the file is as follows.
 	 * The first line should start with at least the following three tokens
 	 * # <number_of_vectors> <number_of_obectives>
@@ -104,15 +105,9 @@ public abstract class AbstractUtilityFunctionsSet<S extends Solution<?>> impleme
 	 *
 	 * @param filePath The path in the file system of the file containing the weight vectors
 	 */
-	public void loadWeightsFromFile(String filePath)  {
-		InputStream in = getClass().getClassLoader().getResourceAsStream(filePath);
-		if (in == null) {
-			try {
-				in = new FileInputStream(filePath) ;
-			} catch (FileNotFoundException e) {
-				e.printStackTrace();
-			}
-		}
+	public void loadWeightsFromFile(String filePath) {
+    System.out.println("FILE PATH: " + filePath) ;
+		InputStream in = getClass().getResourceAsStream("/" + filePath);
 		InputStreamReader isr = new InputStreamReader(in);
 		BufferedReader buffer = new BufferedReader(isr);
 
@@ -127,18 +122,18 @@ public abstract class AbstractUtilityFunctionsSet<S extends Solution<?>> impleme
 
 			// reading the number of weights (only used as estimator
 			// of the number of them)
-			int number_of_weight_vectors = parseInt(st.nextToken());
+			int number_of_weight_vectors = new Integer(st.nextToken());
 			this.weightVectors = new ArrayList<>(number_of_weight_vectors);
 
 			// reading the number of objectives
-			int number_of_objectives     = parseInt(st.nextToken());
+			int number_of_objectives     = new Integer(st.nextToken());
 			this.vectorSize 			 = number_of_objectives;
 
 			while ((line = buffer.readLine())!=null) {
 				st = new StringTokenizer(line);
 				List<Double> new_vector = new ArrayList<>(number_of_objectives);
 				for (int i = 0; i < number_of_objectives; i++)
-					new_vector.add(parseDouble(st.nextToken()));
+					new_vector.add(new Double(st.nextToken()));
 				this.weightVectors.add(new_vector);
 			}
 		} catch (IOException e) {

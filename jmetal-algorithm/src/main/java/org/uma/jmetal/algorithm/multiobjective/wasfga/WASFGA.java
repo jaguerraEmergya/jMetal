@@ -6,16 +6,15 @@ import org.uma.jmetal.algorithm.multiobjective.mombi.util.ASFWASFGA;
 import org.uma.jmetal.algorithm.multiobjective.mombi.util.AbstractUtilityFunctionsSet;
 import org.uma.jmetal.algorithm.multiobjective.wasfga.util.WASFGARanking;
 import org.uma.jmetal.algorithm.multiobjective.wasfga.util.WeightVectors;
-import org.uma.jmetal.operator.crossover.CrossoverOperator;
-import org.uma.jmetal.operator.mutation.MutationOperator;
-import org.uma.jmetal.operator.selection.SelectionOperator;
+import org.uma.jmetal.operator.CrossoverOperator;
+import org.uma.jmetal.operator.MutationOperator;
+import org.uma.jmetal.operator.SelectionOperator;
 import org.uma.jmetal.problem.Problem;
 import org.uma.jmetal.solution.Solution;
+import org.uma.jmetal.util.JMetalException;
 import org.uma.jmetal.util.SolutionListUtils;
-import org.uma.jmetal.util.errorchecking.JMetalException;
 import org.uma.jmetal.util.evaluator.SolutionListEvaluator;
-import org.uma.jmetal.util.fileinput.VectorFileUtils;
-import org.uma.jmetal.util.ranking.Ranking;
+import org.uma.jmetal.util.solutionattribute.Ranking;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -105,11 +104,10 @@ public class WASFGA<S extends Solution<?>> extends AbstractMOMBI<S> implements
 			//For more than two objectives, weights are read from the resources file of jMetal
 			else {
 				String dataFileName = "W" + problem.getNumberOfObjectives() + "D_" + getMaxPopulationSize() + ".dat";
-				weights = VectorFileUtils.readVectors(dataFileName);
+				weights = WeightVectors.readFromResourcesInJMetal("MOEAD_Weights/" + dataFileName);
 			}
 		} else { //If a file with weight vectors is given as parameter, weights are read from that file
-			//weights = WeightVectors.readFromFile(this.weightVectorsFileName) ;
-			weights = VectorFileUtils.readVectors(this.weightVectorsFileName) ;
+			weights = WeightVectors.readFromFile(this.weightVectorsFileName) ;
 		}
 		weights = WeightVectors.invert(weights,true);
 
@@ -158,16 +156,16 @@ public class WASFGA<S extends Solution<?>> extends AbstractMOMBI<S> implements
 	
 	protected Ranking<S> computeRanking(List<S> solutionList) {
 		Ranking<S> ranking = new WASFGARanking<>(this.achievementScalarizingFunction);
-		ranking.compute(solutionList);
+		ranking.computeRanking(solutionList);
 		return ranking;
 	}
 
     protected void addRankedSolutionsToPopulation(Ranking<S> ranking, int index, List<S> population) {
-		population.addAll(ranking.getSubFront(index));
+		population.addAll(ranking.getSubfront(index));
 	}
 
     protected void addLastRankedSolutionsToPopulation(Ranking<S> ranking, int index, List<S> population) {
-		List<S> front 	= ranking.getSubFront(index);
+		List<S> front 	= ranking.getSubfront(index);
 		int remain 		= this.getPopulationSize() - population.size();
 		population.addAll(front.subList(0, remain));
 	}
@@ -188,7 +186,7 @@ public class WASFGA<S extends Solution<?>> extends AbstractMOMBI<S> implements
 	}
 
 	private boolean subfrontFillsIntoThePopulation(Ranking<S> ranking, int index, List<S> population) {
-		return (population.size()+ranking.getSubFront(index).size() < this.getPopulationSize());
+		return (population.size()+ranking.getSubfront(index).size() < this.getPopulationSize());
 	}
 
 	@Override public List<S> getResult() {
@@ -196,7 +194,7 @@ public class WASFGA<S extends Solution<?>> extends AbstractMOMBI<S> implements
 	}
 
 	protected List<S> getNonDominatedSolutions(List<S> solutionList) {
-		return SolutionListUtils.getNonDominatedSolutions(solutionList);
+		return SolutionListUtils.getNondominatedSolutions(solutionList);
 	}
 
 	@Override public String getName() {

@@ -1,12 +1,11 @@
 package org.uma.jmetal.util.artificialdecisionmaker.impl;
 
-import org.uma.jmetal.algorithm.AlgorithmBuilder;
+import java.util.List;
 import org.uma.jmetal.algorithm.InteractiveAlgorithm;
 import org.uma.jmetal.problem.Problem;
 import org.uma.jmetal.solution.Solution;
-import org.uma.jmetal.util.errorchecking.JMetalException;
-
-import java.util.List;
+import org.uma.jmetal.util.AlgorithmBuilder;
+import org.uma.jmetal.util.JMetalException;
 
 /**
  * @author Antonio J. Nebro <antonio@lcc.uma.es>
@@ -22,6 +21,7 @@ public class ArtificiallDecisionMakerBuilder<S extends Solution<?>> implements A
   private double considerationProbability;
   private double tolerance;
   private List<Double> rankingCoeficient;
+  private int numberReferencePoints;
   private List<Double> asp;
 
   /**
@@ -31,6 +31,7 @@ public class ArtificiallDecisionMakerBuilder<S extends Solution<?>> implements A
     this.problem = problem;
     this.maxEvaluations = 25000;
     this.algorithm = algorithm;
+    this.numberReferencePoints =1;
   }
 
   public ArtificiallDecisionMakerBuilder<S> setMaxEvaluations(int maxEvaluations) {
@@ -77,6 +78,7 @@ public class ArtificiallDecisionMakerBuilder<S extends Solution<?>> implements A
   }
 
   public ArtificiallDecisionMakerBuilder<S> setNumberReferencePoints(int numberReferencePoints) {
+    this.numberReferencePoints = numberReferencePoints;
     return this;
   }
 

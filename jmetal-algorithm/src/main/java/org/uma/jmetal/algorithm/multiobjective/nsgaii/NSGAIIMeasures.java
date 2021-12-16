@@ -1,23 +1,22 @@
 package org.uma.jmetal.algorithm.multiobjective.nsgaii;
 
-import org.uma.jmetal.operator.crossover.CrossoverOperator;
-import org.uma.jmetal.operator.mutation.MutationOperator;
-import org.uma.jmetal.operator.selection.SelectionOperator;
+import org.uma.jmetal.measure.Measurable;
+import org.uma.jmetal.measure.MeasureManager;
+import org.uma.jmetal.measure.impl.BasicMeasure;
+import org.uma.jmetal.measure.impl.CountingMeasure;
+import org.uma.jmetal.measure.impl.DurationMeasure;
+import org.uma.jmetal.measure.impl.SimpleMeasureManager;
+import org.uma.jmetal.operator.CrossoverOperator;
+import org.uma.jmetal.operator.MutationOperator;
+import org.uma.jmetal.operator.SelectionOperator;
 import org.uma.jmetal.problem.Problem;
+import org.uma.jmetal.qualityindicator.impl.hypervolume.PISAHypervolume;
 import org.uma.jmetal.solution.Solution;
-import org.uma.jmetal.util.SolutionListUtils;
 import org.uma.jmetal.util.evaluator.SolutionListEvaluator;
-import org.uma.jmetal.util.legacy.front.Front;
-import org.uma.jmetal.util.legacy.front.impl.ArrayFront;
-import org.uma.jmetal.util.legacy.qualityindicator.impl.hypervolume.impl.PISAHypervolume;
-import org.uma.jmetal.util.measure.Measurable;
-import org.uma.jmetal.util.measure.MeasureManager;
-import org.uma.jmetal.util.measure.impl.BasicMeasure;
-import org.uma.jmetal.util.measure.impl.CountingMeasure;
-import org.uma.jmetal.util.measure.impl.DurationMeasure;
-import org.uma.jmetal.util.measure.impl.SimpleMeasureManager;
-import org.uma.jmetal.util.ranking.Ranking;
-import org.uma.jmetal.util.ranking.impl.FastNonDominatedSortRanking;
+import org.uma.jmetal.util.front.Front;
+import org.uma.jmetal.util.front.imp.ArrayFront;
+import org.uma.jmetal.util.solutionattribute.Ranking;
+import org.uma.jmetal.util.solutionattribute.impl.DominanceRanking;
 
 import java.util.Comparator;
 import java.util.List;
@@ -41,11 +40,10 @@ public class NSGAIIMeasures<S extends Solution<?>> extends NSGAII<S> implements 
    * Constructor
    */
   public NSGAIIMeasures(Problem<S> problem, int maxIterations, int populationSize,
-                        int matingPoolSize, int offspringPopulationSize,
                         CrossoverOperator<S> crossoverOperator, MutationOperator<S> mutationOperator,
                         SelectionOperator<List<S>, S> selectionOperator, Comparator<S> dominanceComparator, SolutionListEvaluator<S> evaluator) {
-    super(problem, maxIterations, populationSize, matingPoolSize, offspringPopulationSize,
-            crossoverOperator, mutationOperator, selectionOperator, dominanceComparator, evaluator) ;
+    super(problem, maxIterations, populationSize, crossoverOperator, mutationOperator,
+        selectionOperator, dominanceComparator, evaluator) ;
 
     referenceFront = new ArrayFront() ;
 
@@ -64,7 +62,7 @@ public class NSGAIIMeasures<S extends Solution<?>> extends NSGAII<S> implements 
     if (referenceFront.getNumberOfPoints() > 0) {
       hypervolumeValue.push(
               new PISAHypervolume<S>(referenceFront).evaluate(
-                  SolutionListUtils.getNonDominatedSolutions(getPopulation())));
+                      getNonDominatedSolutions(getPopulation())));
     }
   }
 
@@ -108,10 +106,10 @@ public class NSGAIIMeasures<S extends Solution<?>> extends NSGAII<S> implements 
       List<S> offspringPopulation) {
     List<S> pop = super.replacement(population, offspringPopulation) ;
 
-    Ranking<S> ranking = new FastNonDominatedSortRanking<>(dominanceComparator);
-    ranking.compute(population);
+    Ranking<S> ranking = new DominanceRanking<S>(dominanceComparator);
+    ranking.computeRanking(population);
 
-    numberOfNonDominatedSolutionsInPopulation.set(ranking.getSubFront(0).size());
+    numberOfNonDominatedSolutionsInPopulation.set(ranking.getSubfront(0).size());
 
     return pop;
   }

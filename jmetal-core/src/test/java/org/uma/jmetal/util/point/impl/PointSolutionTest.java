@@ -2,11 +2,16 @@ package org.uma.jmetal.util.point.impl;
 
 import org.junit.Test;
 import org.springframework.test.util.ReflectionTestUtils;
-import org.uma.jmetal.util.point.PointSolution;
+import org.uma.jmetal.util.point.util.PointSolution;
 
 import java.util.Arrays;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertArrayEquals;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 
 /**
  * @author Antonio J. Nebro
@@ -43,9 +48,9 @@ public class PointSolutionTest {
     PointSolution solution = new PointSolution(numberOfObjectives) ;
     ReflectionTestUtils.setField(solution, "objectives", values);
 
-    assertEquals(values[0], solution.objectives()[0], EPSILON) ;
-    assertEquals(values[1], solution.objectives()[1], EPSILON) ;
-    assertEquals(values[2], solution.objectives()[2], EPSILON) ;
+    assertEquals(values[0], solution.getObjective(0), EPSILON) ;
+    assertEquals(values[1], solution.getObjective(1), EPSILON) ;
+    assertEquals(values[2], solution.getObjective(2), EPSILON) ;
   }
 
   @Test public void shouldSetObjectiveAssignTheTheCorrectValue() {
@@ -53,9 +58,9 @@ public class PointSolutionTest {
     double [] values = {1.0, 2.0, 3.0} ;
 
     PointSolution solution = new PointSolution(numberOfObjectives) ;
-    solution.objectives()[0] = values[0];
-    solution.objectives()[1] = values[1];
-    solution.objectives()[2] = values[2];
+    solution.setObjective(0, values[0]);
+    solution.setObjective(1, values[1]);
+    solution.setObjective(2, values[2]);
 
     double [] resultValues = (double [])ReflectionTestUtils.getField(solution, "objectives") ;
     assertArrayEquals(values, resultValues, EPSILON) ;
@@ -67,7 +72,7 @@ public class PointSolutionTest {
     PointSolution solution = new PointSolution(numberOfObjectives) ;
     ReflectionTestUtils.setField(solution, "objectives", values);
 
-    assertEquals(numberOfObjectives, solution.objectives().length) ;
+    assertEquals(numberOfObjectives, solution.getNumberOfObjectives()) ;
   }
 
   @Test public void shouldCopyReturnACopyOfTheSolution() {
@@ -79,6 +84,19 @@ public class PointSolutionTest {
     PointSolution newSolution = (PointSolution)solution.copy() ;
     assertEquals(solution, newSolution) ;
   }
+
+  @Test public void idleTestToCoverTheUnusedMethods() {
+    PointSolution solution = new PointSolution(3) ;
+
+    solution.setVariableValue(0, 0.0);
+    solution.setAttribute(null, null);
+
+    assertNull(solution.getVariableValue(0)) ;
+    assertNull(solution.getVariableValueString(0)) ;
+    assertEquals(0, solution.getNumberOfVariables()) ;
+    assertNull(solution.getAttribute(null)) ;
+  }
+
 
   @Test
   public void shouldEqualsReturnTrueIfTheSolutionsAreIdentical() {
@@ -114,8 +132,8 @@ public class PointSolutionTest {
     PointSolution solution = new PointSolution(numberOfObjectives) ;
     ReflectionTestUtils.setField(solution, "objectives", values);
 
-    PointSolution newSolution = solution.copy() ;
-    newSolution.objectives()[0] = 23424;
+    PointSolution newSolution = (PointSolution)solution.copy() ;
+    newSolution.setObjective(0, 23424);
 
     assertFalse(solution.equals(newSolution));
   }
@@ -146,25 +164,4 @@ public class PointSolutionTest {
 
     assertEquals(Arrays.hashCode(values), solution.hashCode());
   }
-  
-	@Test
-	public void shouldGetAttributesReturnAnNoAttributesWhenInitiateAnPointSolution() {
-
-		PointSolution solution = new PointSolution(3);
-
-		assertTrue(solution.attributes().isEmpty());
-	}
-
-	@Test
-	public void shouldReturnTheCorrectAttributesWhenGetAllAttributes() {
-
-		PointSolution solution = new PointSolution(3);
-
-		solution.attributes().put("fake-atribute-1", 1);
-		solution.attributes().put("fake-atribute-2", 2);
-
-		assertFalse(solution.attributes().isEmpty());
-		assertEquals((int) solution.attributes().get("fake-atribute-1"), 1);
-		assertEquals((int) solution.attributes().get("fake-atribute-2"), 2);
-	}
 }

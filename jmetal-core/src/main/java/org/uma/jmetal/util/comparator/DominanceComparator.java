@@ -1,7 +1,8 @@
 package org.uma.jmetal.util.comparator;
 
 import org.uma.jmetal.solution.Solution;
-import org.uma.jmetal.util.errorchecking.Check;
+import org.uma.jmetal.util.JMetalException;
+import org.uma.jmetal.util.comparator.impl.OverallConstraintViolationComparator;
 
 import java.io.Serializable;
 import java.util.Comparator;
@@ -17,12 +18,22 @@ public class DominanceComparator<S extends Solution<?>> implements Comparator<S>
 
   /** Constructor */
   public DominanceComparator() {
-    this(new ConstraintViolationComparator<S>());
+    this(new OverallConstraintViolationComparator<S>(), 0.0) ;
+  }
+
+  /** Constructor */
+  public DominanceComparator(double epsilon) {
+    this(new OverallConstraintViolationComparator<S>(), epsilon) ;
   }
 
   /** Constructor */
   public DominanceComparator(ConstraintViolationComparator<S> constraintComparator) {
-    this.constraintViolationComparator = constraintComparator;
+    this(constraintComparator, 0.0) ;
+  }
+
+  /** Constructor */
+  public DominanceComparator(ConstraintViolationComparator<S> constraintComparator, double epsilon) {
+    constraintViolationComparator = constraintComparator ;
   }
 
   /**
@@ -30,36 +41,36 @@ public class DominanceComparator<S extends Solution<?>> implements Comparator<S>
    *
    * @param solution1 Object representing the first <code>Solution</code>.
    * @param solution2 Object representing the second <code>Solution</code>.
-   * @return -1, or 0, or 1 if solution1 dominates solution2, both are non-dominated, or solution1
-   *     is dominated by solution2, respectively.
+   * @return -1, or 0, or 1 if solution1 dominates solution2, both are
+   * non-dominated, or solution1  is dominated by solution2, respectively.
    */
   @Override
   public int compare(S solution1, S solution2) {
-    Check.notNull(solution1);
-    Check.notNull(solution2);
-    Check.that(
-        solution1.objectives().length == solution2.objectives().length,
-        "Cannot compare because solution1 has "
-            + solution1.objectives().length
-            + " objectives and solution2 has "
-            + solution2.objectives().length);
-
-    int result;
-    result = constraintViolationComparator.compare(solution1, solution2);
+    if (solution1 == null) {
+      throw new JMetalException("Solution1 is null") ;
+    } else if (solution2 == null) {
+      throw new JMetalException("Solution2 is null") ;
+    } else if (solution1.getNumberOfObjectives() != solution2.getNumberOfObjectives()) {
+      throw new JMetalException("Cannot compare because solution1 has " +
+          solution1.getNumberOfObjectives()+ " objectives and solution2 has " +
+          solution2.getNumberOfObjectives()) ;
+    }
+    int result ;
+    result = constraintViolationComparator.compare(solution1, solution2) ;
     if (result == 0) {
-      result = dominanceTest(solution1, solution2);
+      result = dominanceTest(solution1, solution2) ;
     }
 
-    return result;
+    return result ;
   }
 
   private int dominanceTest(S solution1, S solution2) {
-    int bestIsOne = 0;
-    int bestIsTwo = 0;
-    int result;
-    for (int i = 0; i < solution1.objectives().length; i++) {
-      double value1 = solution1.objectives()[i];
-      double value2 = solution2.objectives()[i];
+    int bestIsOne = 0 ;
+    int bestIsTwo = 0 ;
+    int result ;
+    for (int i = 0; i < solution1.getNumberOfObjectives(); i++) {
+      double value1 = solution1.getObjective(i);
+      double value2 = solution2.getObjective(i);
       if (value1 != value2) {
         if (value1 < value2) {
           bestIsOne = 1;
@@ -69,7 +80,13 @@ public class DominanceComparator<S extends Solution<?>> implements Comparator<S>
         }
       }
     }
-    result = Integer.compare(bestIsTwo, bestIsOne);
-    return result;
+    if (bestIsOne > bestIsTwo) {
+      result = -1;
+    } else if (bestIsTwo > bestIsOne) {
+      result = 1;
+    } else {
+      result = 0;
+    }
+    return result ;
   }
 }

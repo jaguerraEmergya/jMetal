@@ -2,20 +2,14 @@ package org.uma.jmetal.algorithm.multiobjective.rnsgaii;
 
 import org.uma.jmetal.algorithm.InteractiveAlgorithm;
 import org.uma.jmetal.algorithm.multiobjective.nsgaii.NSGAII;
-import org.uma.jmetal.operator.crossover.CrossoverOperator;
-import org.uma.jmetal.operator.mutation.MutationOperator;
-import org.uma.jmetal.operator.selection.SelectionOperator;
-import org.uma.jmetal.operator.selection.impl.RankingAndPreferenceSelection;
+import org.uma.jmetal.operator.CrossoverOperator;
+import org.uma.jmetal.operator.MutationOperator;
+import org.uma.jmetal.operator.SelectionOperator;
+import org.uma.jmetal.operator.impl.selection.RankingAndPreferenceSelection;
 import org.uma.jmetal.problem.Problem;
 import org.uma.jmetal.solution.Solution;
 import org.uma.jmetal.util.comparator.DominanceComparator;
 import org.uma.jmetal.util.evaluator.SolutionListEvaluator;
-import org.uma.jmetal.util.measure.Measurable;
-import org.uma.jmetal.util.measure.MeasureManager;
-import org.uma.jmetal.util.measure.impl.BasicMeasure;
-import org.uma.jmetal.util.measure.impl.CountingMeasure;
-import org.uma.jmetal.util.measure.impl.DurationMeasure;
-import org.uma.jmetal.util.measure.impl.SimpleMeasureManager;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -25,78 +19,38 @@ import java.util.List;
  */
 @SuppressWarnings("serial")
 public class RNSGAII<S extends Solution<?>> extends NSGAII<S> implements
-    InteractiveAlgorithm<S,List<S>>, Measurable {
+    InteractiveAlgorithm<S,List<S>> {
+
 
   private List<Double> interestPoint;
-  private double epsilon;
-
-  protected SimpleMeasureManager measureManager ;
-  protected BasicMeasure<List<S>> solutionListMeasure ;
-  protected CountingMeasure evaluations ;
-  protected DurationMeasure durationMeasure ;
+  private  double epsilon;
 
   /**
    * Constructor
    */
   public RNSGAII(Problem<S> problem, int maxEvaluations, int populationSize,
-                 int matingPoolSize, int offspringPopulationSize,
                  CrossoverOperator<S> crossoverOperator, MutationOperator<S> mutationOperator,
-                 SelectionOperator<List<S>, S> selectionOperator, SolutionListEvaluator<S> evaluator,
-                 List<Double> interestPoint, double epsilon) {
-    super(problem,maxEvaluations, populationSize,matingPoolSize, offspringPopulationSize, crossoverOperator,
-            mutationOperator,selectionOperator, new DominanceComparator<S>(), evaluator);
-    this.interestPoint = interestPoint;
-    this.epsilon = epsilon;
-
-    measureManager = new SimpleMeasureManager() ;
-    measureManager.setPushMeasure("currentPopulation", solutionListMeasure);
-    measureManager.setPushMeasure("currentEvaluation", evaluations);
-
-    initMeasures();
+                 SelectionOperator<List<S>, S> selectionOperator, SolutionListEvaluator<S> evaluator, List<Double> interestPoint, double epsilon) {
+    super(problem,maxEvaluations,populationSize,crossoverOperator,mutationOperator,selectionOperator, new DominanceComparator<S>(), evaluator);
+    this.interestPoint= interestPoint;
+    this.epsilon =epsilon;
   }
   @Override
   public void updatePointOfInterest(List<Double> newReferencePoints){
     this.interestPoint = newReferencePoints;
   }
   @Override protected void initProgress() {
-    evaluations.reset(getMaxPopulationSize()) ;
+    evaluations = getMaxPopulationSize();
   }
 
   @Override protected void updateProgress() {
-    evaluations.increment(getMaxPopulationSize());
-    solutionListMeasure.push(getPopulation());
+    evaluations += getMaxPopulationSize() ;
   }
 
   @Override protected boolean isStoppingConditionReached() {
-    return evaluations.get() >= maxEvaluations;
+    return evaluations >= maxEvaluations;
   }
 
-  @Override
-  public void run() {
-    durationMeasure.reset();
-    durationMeasure.start();
-    super.run();
-    durationMeasure.stop();
-  }
-
-  /* Measures code */
-  private void initMeasures() {
-    durationMeasure = new DurationMeasure() ;
-    evaluations = new CountingMeasure(0) ;
-    solutionListMeasure = new BasicMeasure<>() ;
-
-    measureManager = new SimpleMeasureManager() ;
-    measureManager.setPullMeasure("currentExecutionTime", durationMeasure);
-    measureManager.setPullMeasure("currentEvaluation", evaluations);
-
-    measureManager.setPushMeasure("currentPopulation", solutionListMeasure);
-    measureManager.setPushMeasure("currentEvaluation", evaluations);
-  }
-
-  @Override
-  public MeasureManager getMeasureManager() {
-    return measureManager ;
-  }
 
   @Override protected List<S> replacement(List<S> population, List<S> offspringPopulation) {
     List<S> jointPopulation = new ArrayList<>();
@@ -104,16 +58,21 @@ public class RNSGAII<S extends Solution<?>> extends NSGAII<S> implements
     jointPopulation.addAll(offspringPopulation);
 
     RankingAndPreferenceSelection<S> rankingAndCrowdingSelection ;
-    rankingAndCrowdingSelection = new RankingAndPreferenceSelection<S>(getMaxPopulationSize(), interestPoint, epsilon) ;
+    rankingAndCrowdingSelection = new RankingAndPreferenceSelection<S>(getMaxPopulationSize(),interestPoint,epsilon) ;
 
     return rankingAndCrowdingSelection.execute(jointPopulation) ;
   }
+
+  @Override public List<S> getResult() {
+    return getNonDominatedSolutions(getPopulation());
+  }
+
 
   @Override public String getName() {
     return "RNSGAII" ;
   }
 
   @Override public String getDescription() {
-    return "Reference Point Based Nondominated Sorting Genetic Algorithm version II" ;
+    return "Nondominated Sorting Genetic Algorithm version II" ;
   }
 }

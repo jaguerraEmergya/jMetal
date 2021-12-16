@@ -1,7 +1,7 @@
 package org.uma.jmetal.problem.singleobjective;
 
-import org.uma.jmetal.problem.doubleproblem.impl.AbstractDoubleProblem;
-import org.uma.jmetal.solution.doublesolution.DoubleSolution;
+import org.uma.jmetal.problem.impl.AbstractDoubleProblem;
+import org.uma.jmetal.solution.DoubleSolution;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -32,18 +32,19 @@ public class Griewank extends AbstractDoubleProblem {
       upperLimit.add(600.0);
     }
 
-    setVariableBounds(lowerLimit, upperLimit);
+    setLowerLimit(lowerLimit);
+    setUpperLimit(upperLimit);
   }
 
   /** Evaluate() method */
   @Override
-  public DoubleSolution evaluate(DoubleSolution solution) {
+  public void evaluate(DoubleSolution solution) {
     int numberOfVariables = getNumberOfVariables() ;
 
     double[] x = new double[numberOfVariables] ;
 
     for (int i = 0; i < numberOfVariables; i++) {
-      x[i] = solution.variables().get(i) ;
+      x[i] = solution.getVariableValue(i) ;
     }
 
     double sum = 0.0;
@@ -54,9 +55,7 @@ public class Griewank extends AbstractDoubleProblem {
       mult *= Math.cos(x[var] / Math.sqrt(var + 1));
     }
 
-    solution.objectives()[0] = 1.0 / d * sum - mult + 1.0;
-
-    return solution ;
+    solution.setObjective(0, 1.0 / d * sum - mult + 1.0);
   }
 }
 

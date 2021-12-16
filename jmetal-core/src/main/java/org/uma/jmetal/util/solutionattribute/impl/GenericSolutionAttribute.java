@@ -32,12 +32,12 @@ public class GenericSolutionAttribute <S extends Solution<?>, V> implements Solu
   @SuppressWarnings("unchecked")
   @Override
   public V getAttribute(S solution) {
-    return (V)solution.attributes().get(getAttributeIdentifier());
+    return (V)solution.getAttribute(getAttributeIdentifier());
   }
 
   @Override
   public void setAttribute(S solution, V value) {
-     solution.attributes().put(getAttributeIdentifier(), value);
+     solution.setAttribute(getAttributeIdentifier(), value);
   }
 
   @Override

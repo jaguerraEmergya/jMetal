@@ -1,10 +1,10 @@
 package org.uma.jmetal.algorithm.impl;
 
-import org.uma.jmetal.operator.crossover.CrossoverOperator;
-import org.uma.jmetal.operator.mutation.MutationOperator;
-import org.uma.jmetal.operator.selection.SelectionOperator;
+import org.uma.jmetal.operator.CrossoverOperator;
+import org.uma.jmetal.operator.MutationOperator;
+import org.uma.jmetal.operator.SelectionOperator;
 import org.uma.jmetal.problem.Problem;
-import org.uma.jmetal.util.errorchecking.JMetalException;
+import org.uma.jmetal.util.JMetalException;
 
 import java.util.ArrayList;
 import java.util.List;

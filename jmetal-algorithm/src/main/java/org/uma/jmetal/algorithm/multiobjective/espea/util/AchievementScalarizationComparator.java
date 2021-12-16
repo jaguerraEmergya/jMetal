@@ -1,8 +1,8 @@
 package org.uma.jmetal.algorithm.multiobjective.espea.util;
 
-import org.uma.jmetal.solution.Solution;
-
 import java.util.Comparator;
+
+import org.uma.jmetal.solution.Solution;
 
 /**
  * Compares solutions based on their achievement scalarization value (ASV). The
@@ -39,10 +39,10 @@ public class AchievementScalarizationComparator<S extends Solution<?>> implement
     double max1 = -Double.MAX_VALUE;
     double max2 = -Double.MAX_VALUE;
 
-    for (int i = 0; i < s1.objectives().length; i++) {
+    for (int i = 0; i < s1.getNumberOfObjectives(); i++) {
       if (i != objective) {
-        max1 = Math.max(max1, s1.objectives()[i]);
-        max2 = Math.max(max2, s2.objectives()[i]);
+        max1 = Math.max(max1, s1.getObjective(i));
+        max2 = Math.max(max2, s2.getObjective(i));
       }
     }
 
@@ -52,9 +52,9 @@ public class AchievementScalarizationComparator<S extends Solution<?>> implement
       return 1;
 
     // max1 = max2
-    if (s1.objectives()[objective] < s2.objectives()[objective])
+    if (s1.getObjective(objective) < s2.getObjective(objective))
       return -1;
-    if (s1.objectives()[objective]> s2.objectives()[objective])
+    if (s1.getObjective(objective) > s2.getObjective(objective))
       return 1;
 
     return 0;

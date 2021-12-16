@@ -1,7 +1,7 @@
 package org.uma.jmetal.problem.singleobjective;
 
-import org.uma.jmetal.problem.doubleproblem.impl.AbstractDoubleProblem;
-import org.uma.jmetal.solution.doublesolution.DoubleSolution;
+import org.uma.jmetal.problem.impl.AbstractDoubleProblem;
+import org.uma.jmetal.solution.DoubleSolution;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -30,20 +30,28 @@ public class Sphere extends AbstractDoubleProblem {
       upperLimit.add(5.12);
     }
 
-    setVariableBounds(lowerLimit, upperLimit);
+    setLowerLimit(lowerLimit);
+    setUpperLimit(upperLimit);
   }
 
   /** Evaluate() method */
   @Override
-  public DoubleSolution evaluate(DoubleSolution solution) {
-    double sum = 0.0;
-    for (double v : solution.variables()) {
-      sum += v * v;
+  public void evaluate(DoubleSolution solution) {
+    int numberOfVariables = getNumberOfVariables() ;
+
+    double[] x = new double[numberOfVariables] ;
+
+    for (int i = 0; i < numberOfVariables; i++) {
+      x[i] = solution.getVariableValue(i) ;
     }
 
-    solution.objectives()[0] = sum;
+    double sum = 0.0 ;
+    for (int var = 0; var < numberOfVariables; var++) {
+      double value = x[var];
+      sum += value * value;
+    }
 
-    return solution ;
+    solution.setObjective(0, sum);
   }
 }
 

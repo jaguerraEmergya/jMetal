@@ -1,18 +1,16 @@
 package org.uma.jmetal.problem.multiobjective.maf;
 
-import org.uma.jmetal.problem.doubleproblem.impl.AbstractDoubleProblem;
-import org.uma.jmetal.solution.doublesolution.DoubleSolution;
-
 import java.util.ArrayList;
 import java.util.List;
+import org.uma.jmetal.problem.impl.AbstractDoubleProblem;
+import org.uma.jmetal.solution.DoubleSolution;
 
 /**
  * Class representing problem MaF05
  */
-@SuppressWarnings("serial")
 public class MaF05 extends AbstractDoubleProblem {
 
-  public double const5[];
+  public static double const5[];
 
   /**
    * Default constructor
@@ -42,7 +40,8 @@ public class MaF05 extends AbstractDoubleProblem {
       upper.add(1.0);
     }
 
-    setVariableBounds(lower, upper);
+    setLowerLimit(lower);
+    setUpperLimit(upper);
 
     //other constants during the whole process once M&D are defined
     double[] c5 = new double[numberOfObjectives];
@@ -58,16 +57,16 @@ public class MaF05 extends AbstractDoubleProblem {
    * @param solution The solution to evaluate
    */
   @Override
-  public DoubleSolution evaluate(DoubleSolution solution) {
+  public void evaluate(DoubleSolution solution) {
 
-    int numberOfVariables = solution.variables().size();
-    int numberOfObjectives = solution.objectives().length;
+    int numberOfVariables = solution.getNumberOfVariables();
+    int numberOfObjectives = solution.getNumberOfObjectives();
 
     double[] x = new double[numberOfVariables];
     double[] f = new double[numberOfObjectives];
 
     for (int i = 0; i < numberOfVariables; i++) {
-      x[i] = solution.variables().get(i);
+      x[i] = solution.getVariableValue(i);
     }
     double g = 0;
     // evaluate g
@@ -89,8 +88,8 @@ public class MaF05 extends AbstractDoubleProblem {
             1);
 
     for (int i = 0; i < numberOfObjectives; i++) {
-      solution.objectives()[i] = f[i];
+      solution.setObjective(i, f[i]);
     }
-    return solution ;
+
   }
 }

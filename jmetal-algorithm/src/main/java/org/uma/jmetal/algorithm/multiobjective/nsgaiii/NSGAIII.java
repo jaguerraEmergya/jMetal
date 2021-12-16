@@ -7,8 +7,8 @@ import org.uma.jmetal.solution.Solution;
 import org.uma.jmetal.util.JMetalLogger;
 import org.uma.jmetal.util.SolutionListUtils;
 import org.uma.jmetal.util.evaluator.SolutionListEvaluator;
-import org.uma.jmetal.util.ranking.Ranking;
-import org.uma.jmetal.util.ranking.impl.FastNonDominatedSortRanking;
+import org.uma.jmetal.util.solutionattribute.Ranking;
+import org.uma.jmetal.util.solutionattribute.impl.DominanceRanking;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -28,7 +28,7 @@ public class NSGAIII<S extends Solution<?>> extends AbstractGeneticAlgorithm<S, 
 
   protected SolutionListEvaluator<S> evaluator ;
 
-  protected int numberOfDivisions  ;
+  protected Vector<Integer> numberOfDivisions  ;
   protected List<ReferencePoint<S>> referencePoints = new Vector<>() ;
 
   /** Constructor */
@@ -43,7 +43,8 @@ public class NSGAIII<S extends Solution<?>> extends AbstractGeneticAlgorithm<S, 
     evaluator = builder.getEvaluator() ;
 
     /// NSGAIII
-    numberOfDivisions = builder.getNumberOfDivisions() ;
+    numberOfDivisions = new Vector<>(1) ;
+    numberOfDivisions.add(12) ; // Default value for 3D problems
 
     (new ReferencePoint<S>()).generateReferencePoints(referencePoints,getProblem().getNumberOfObjectives() , numberOfDivisions);
 
@@ -128,30 +129,24 @@ public class NSGAIII<S extends Solution<?>> extends AbstractGeneticAlgorithm<S, 
     Ranking<S> ranking = computeRanking(jointPopulation);
     
     //List<Solution> pop = crowdingDistanceSelection(ranking);
-    List<S> last = new ArrayList<>();
     List<S> pop = new ArrayList<>();
     List<List<S>> fronts = new ArrayList<>();
     int rankingIndex = 0;
     int candidateSolutions = 0;
     while (candidateSolutions < getMaxPopulationSize()) {
-      last = ranking.getSubFront(rankingIndex);
-      fronts.add(last);
-      candidateSolutions += last.size();
-      if ((pop.size() + last.size()) <= getMaxPopulationSize())
-        pop.addAll(last);
+      fronts.add(ranking.getSubfront(rankingIndex));
+      candidateSolutions += ranking.getSubfront(rankingIndex).size();
+      if ((pop.size() + ranking.getSubfront(rankingIndex).size()) <= getMaxPopulationSize())
+        addRankedSolutionsToPopulation(ranking, rankingIndex, pop);
       rankingIndex++;
     }
-
-    if (pop.size() == this.getMaxPopulationSize())
-      return pop;
     
     // A copy of the reference list should be used as parameter of the environmental selection
     EnvironmentalSelection<S> selection =
-            new EnvironmentalSelection<>(fronts,getMaxPopulationSize() - pop.size(),getReferencePointsCopy(),
+            new EnvironmentalSelection<>(fronts,getMaxPopulationSize(),getReferencePointsCopy(),
                     getProblem().getNumberOfObjectives());
     
-    var choosen = selection.execute(last);
-    pop.addAll(choosen);
+    pop = selection.execute(pop);
      
     return pop;
   }
@@ -162,14 +157,24 @@ public class NSGAIII<S extends Solution<?>> extends AbstractGeneticAlgorithm<S, 
   }
 
   protected Ranking<S> computeRanking(List<S> solutionList) {
-    Ranking<S> ranking = new FastNonDominatedSortRanking<>() ;
-    ranking.compute(solutionList) ;
+    Ranking<S> ranking = new DominanceRanking<>() ;
+    ranking.computeRanking(solutionList) ;
 
     return ranking ;
   }
 
+  protected void addRankedSolutionsToPopulation(Ranking<S> ranking, int rank, List<S> population) {
+    List<S> front ;
+
+    front = ranking.getSubfront(rank);
+
+    for (int i = 0 ; i < front.size(); i++) {
+      population.add(front.get(i));
+    }
+  }
+
   protected List<S> getNonDominatedSolutions(List<S> solutionList) {
-    return SolutionListUtils.getNonDominatedSolutions(solutionList) ;
+    return SolutionListUtils.getNondominatedSolutions(solutionList) ;
   }
 
   @Override public String getName() {

@@ -1,8 +1,12 @@
 package org.uma.jmetal.qualityindicator.impl;
 
-import org.uma.jmetal.qualityindicator.QualityIndicator;
-import org.uma.jmetal.util.errorchecking.Check;
-import org.uma.jmetal.util.errorchecking.JMetalException;
+import org.uma.jmetal.solution.Solution;
+import org.uma.jmetal.util.JMetalException;
+import org.uma.jmetal.util.front.Front;
+import org.uma.jmetal.util.front.imp.ArrayFront;
+
+import java.io.FileNotFoundException;
+import java.util.List;
 
 /**
  * This class implements the unary epsilon additive indicator as proposed in E.
@@ -17,7 +21,7 @@ import org.uma.jmetal.util.errorchecking.JMetalException;
  * @author Juan J. Durillo
  */
 @SuppressWarnings("serial")
-public class Epsilon extends QualityIndicator {
+public class Epsilon<S extends Solution<?>> extends GenericIndicator<S> {
 
   /**
    * Default constructor
@@ -28,10 +32,20 @@ public class Epsilon extends QualityIndicator {
   /**
    * Constructor
    *
-   * @param referenceFront
+   * @param referenceParetoFrontFile
+   * @throws FileNotFoundException
    */
-  public Epsilon(double[][] referenceFront) {
-    super(referenceFront) ;
+  public Epsilon(String referenceParetoFrontFile) throws FileNotFoundException {
+    super(referenceParetoFrontFile) ;
+  }
+
+  /**
+   * Constructor
+   *
+   * @param referenceParetoFront
+   */
+  public Epsilon(Front referenceParetoFront) {
+    super(referenceParetoFront) ;
   }
 
   @Override
@@ -42,38 +56,38 @@ public class Epsilon extends QualityIndicator {
   /**
    * Evaluate() method
    *
-   * @param front
+   * @param solutionList
    * @return
    */
-  @Override public double compute(double[][] front) {
-    Check.notNull(front);
+  @Override public Double evaluate(List<S> solutionList) {
+    if (solutionList == null) {
+      throw new JMetalException("The pareto front approximation list is null") ;
+    }
 
-    return epsilon(front, referenceFront);
+    return epsilon(new ArrayFront(solutionList), referenceParetoFront);
   }
 
   /**
    * Returns the value of the epsilon indicator.
    *
    * @param front Solution front
-   * @param referenceFront Reference Pareto front
+   * @param referenceFront Optimal Pareto front
    * @return the value of the epsilon indicator
    * @throws JMetalException
    */
-  private double epsilon(double[][] front, double[][] referenceFront) throws JMetalException {
+  private double epsilon(Front front, Front referenceFront) throws JMetalException {
 
     double eps, epsJ = 0.0, epsK = 0.0, epsTemp;
 
-    int numberOfObjectives = front[0].length ;
+    int numberOfObjectives = front.getPointDimensions() ;
 
     eps = Double.MIN_VALUE;
 
-    int a = referenceFront.length ;
-    int b =  front.length ;
-
-    for (int i = 0; i < referenceFront.length; i++) {
-      for (int j = 0; j < front.length; j++) {
+    for (int i = 0; i < referenceFront.getNumberOfPoints(); i++) {
+      for (int j = 0; j < front.getNumberOfPoints(); j++) {
         for (int k = 0; k < numberOfObjectives; k++) {
-          epsTemp = front[j][k] - referenceFront[i][k] ;
+          epsTemp = front.getPoint(j).getDimensionValue(k)
+              - referenceFront.getPoint(i).getDimensionValue(k);
           if (k == 0) {
             epsK = epsTemp;
           } else if (epsK < epsTemp) {
@@ -95,11 +109,11 @@ public class Epsilon extends QualityIndicator {
     return eps;
   }
 
-  @Override public String getDescription() {
-    return "Additive Epsilon quality indicator" ;
-  }
-
   @Override public String getName() {
     return "EP" ;
+  }
+
+  @Override public String getDescription() {
+    return "Additive Epsilon quality indicator" ;
   }
 }

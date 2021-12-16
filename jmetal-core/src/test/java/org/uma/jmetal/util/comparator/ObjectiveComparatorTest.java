@@ -1,15 +1,17 @@
 package org.uma.jmetal.util.comparator;
 
-import org.junit.jupiter.api.Test;
-import org.uma.jmetal.problem.doubleproblem.DoubleProblem;
-import org.uma.jmetal.problem.doubleproblem.impl.DummyDoubleProblem;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.rules.ExpectedException;
+import org.uma.jmetal.solution.DoubleSolution;
 import org.uma.jmetal.solution.Solution;
-import org.uma.jmetal.solution.doublesolution.DoubleSolution;
-import org.uma.jmetal.util.errorchecking.JMetalException;
+import org.uma.jmetal.util.JMetalException;
 
+import static org.hamcrest.CoreMatchers.containsString;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertThrows;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 /**
  * @author Antonio J. Nebro <antonio@lcc.uma.es>
@@ -18,8 +20,10 @@ import static org.mockito.Mockito.mock;
 public class ObjectiveComparatorTest {
   private ObjectiveComparator<Solution<?>> comparator ;
 
-  @Test
-  public void shouldCompareReturnOneIfTheFirstSolutionIsNull() {
+  @Rule
+  public ExpectedException exception = ExpectedException.none();
+
+  @Test public void shouldCompareReturnOneIfTheFirstSolutionIsNull() {
     comparator = new ObjectiveComparator<Solution<?>>(0) ;
 
     Solution<?> solution2 = mock(Solution.class) ;
@@ -28,7 +32,7 @@ public class ObjectiveComparatorTest {
   }
 
   @Test public void shouldCompareReturnMinusOneIfTheSecondSolutionIsNull() {
-    comparator = new ObjectiveComparator<>(0) ;
+    comparator = new ObjectiveComparator<Solution<?>>(0) ;
 
     Solution<?> solution1 = mock(Solution.class) ;
 
@@ -36,35 +40,39 @@ public class ObjectiveComparatorTest {
   }
 
   @Test public void shouldCompareReturnZeroIfBothSolutionsAreNull() {
-    comparator = new ObjectiveComparator<>(0) ;
+    comparator = new ObjectiveComparator<Solution<?>>(0) ;
 
     assertEquals(0, comparator.compare(null, null)) ;
   }
 
   @Test public void shouldCompareReturnMinusOneIfTheObjectiveOfSolution1IsLower() {
-    comparator = new ObjectiveComparator<>(0) ;
+    comparator = new ObjectiveComparator<Solution<?>>(0) ;
 
-    DoubleProblem problem = new DummyDoubleProblem(2, 1, 0) ;
+    DoubleSolution solution1 = mock(DoubleSolution.class) ;
+    DoubleSolution solution2 = mock(DoubleSolution.class) ;
 
-    DoubleSolution solution1 = problem.createSolution() ;
-    DoubleSolution solution2 = problem.createSolution() ;
+    when(solution1.getNumberOfObjectives()).thenReturn(4) ;
+    when(solution2.getNumberOfObjectives()).thenReturn(4) ;
 
-    solution1.objectives()[0] = -4.0 ;
-    solution2.objectives()[0] = 5.0 ;
+    when(solution1.getObjective(0)).thenReturn(-4.0) ;
+    when(solution2.getObjective(0)).thenReturn(5.0) ;
 
     assertEquals(-1, comparator.compare(solution1, solution2)) ;
+    verify(solution1).getObjective(0) ;
+    verify(solution2).getObjective(0) ;
   }
 
   @Test public void shouldCompareReturnOneIfTheObjectiveOfSolution2IsLower() {
     comparator = new ObjectiveComparator<Solution<?>>(2) ;
 
-    DoubleProblem problem = new DummyDoubleProblem(2, 3, 0) ;
+    DoubleSolution solution1 = mock(DoubleSolution.class) ;
+    DoubleSolution solution2 = mock(DoubleSolution.class) ;
 
-    DoubleSolution solution1 = problem.createSolution() ;
-    DoubleSolution solution2 = problem.createSolution() ;
+    when(solution1.getNumberOfObjectives()).thenReturn(4) ;
+    when(solution2.getNumberOfObjectives()).thenReturn(4) ;
 
-    solution1.objectives()[2] = 7.0 ;
-    solution2.objectives()[2] = 5.0 ;
+    when(solution1.getObjective(2)).thenReturn(7.0) ;
+    when(solution2.getObjective(2)).thenReturn(5.0) ;
 
     assertEquals(1, comparator.compare(solution1, solution2)) ;
   }
@@ -72,73 +80,90 @@ public class ObjectiveComparatorTest {
   @Test public void shouldCompareReturnZeroIfTheObjectiveOfTheSolutionsIsTheSame() {
     comparator = new ObjectiveComparator<Solution<?>>(2) ;
 
-    DoubleProblem problem = new DummyDoubleProblem(2, 3, 0) ;
+    DoubleSolution solution1 = mock(DoubleSolution.class) ;
+    DoubleSolution solution2 = mock(DoubleSolution.class) ;
 
-    DoubleSolution solution1 = problem.createSolution() ;
-    DoubleSolution solution2 = problem.createSolution() ;
+    when(solution1.getNumberOfObjectives()).thenReturn(4) ;
+    when(solution2.getNumberOfObjectives()).thenReturn(4) ;
 
-    solution1.objectives()[2] = 7.0 ;
-    solution2.objectives()[2] = 7.0 ;
+    when(solution1.getObjective(2)).thenReturn(7.0) ;
+    when(solution2.getObjective(2)).thenReturn(7.0) ;
 
     assertEquals(0, comparator.compare(solution1, solution2)) ;
   }
 
   @Test public void shouldCompareReturnMinusOneIfTheObjectiveOfSolution1IsGreaterInDescendingOrder() {
-    comparator = new ObjectiveComparator<>(0, ObjectiveComparator.Ordering.DESCENDING) ;
+    comparator = new ObjectiveComparator<Solution<?>>(0, ObjectiveComparator.Ordering.DESCENDING) ;
 
-    DoubleProblem problem = new DummyDoubleProblem(2, 1, 0) ;
+    DoubleSolution solution1 = mock(DoubleSolution.class) ;
+    DoubleSolution solution2 = mock(DoubleSolution.class) ;
 
-    DoubleSolution solution1 = problem.createSolution() ;
-    DoubleSolution solution2 = problem.createSolution() ;
+    when(solution1.getNumberOfObjectives()).thenReturn(4) ;
+    when(solution2.getNumberOfObjectives()).thenReturn(4) ;
 
-    solution1.objectives()[0] = 25.0 ;
-    solution2.objectives()[0] = 5.0 ;
+    when(solution1.getObjective(0)).thenReturn(25.0) ;
+    when(solution2.getObjective(0)).thenReturn(5.0) ;
 
     assertEquals(-1, comparator.compare(solution1, solution2)) ;
+    verify(solution1).getObjective(0) ;
+    verify(solution2).getObjective(0) ;
   }
 
   @Test public void shouldCompareReturnOneIfTheObjectiveOfSolution2IsGreaterInDescendingOrder() {
     comparator = new ObjectiveComparator<Solution<?>>(2, ObjectiveComparator.Ordering.DESCENDING) ;
 
-    DoubleProblem problem = new DummyDoubleProblem(2, 3, 0) ;
+    DoubleSolution solution1 = mock(DoubleSolution.class) ;
+    DoubleSolution solution2 = mock(DoubleSolution.class) ;
 
-    DoubleSolution solution1 = problem.createSolution() ;
-    DoubleSolution solution2 = problem.createSolution() ;
+    when(solution1.getNumberOfObjectives()).thenReturn(4) ;
+    when(solution2.getNumberOfObjectives()).thenReturn(4) ;
 
-    solution1.objectives()[2] = 7.0 ;
-    solution2.objectives()[2] = 25.0 ;
+    when(solution1.getObjective(2)).thenReturn(7.0) ;
+    when(solution2.getObjective(2)).thenReturn(25.0) ;
 
     assertEquals(1, comparator.compare(solution1, solution2)) ;
+
+    verify(solution1).getObjective(2) ;
+    verify(solution2).getObjective(2) ;
+    verify(solution1).getNumberOfObjectives();
+    verify(solution2).getNumberOfObjectives();
   }
 
-  @Test public void shouldCompareRaiseAnExceptionIfSolution1HasFewerObjectivesThanTheOneRequested() {
+  @Test public void shouldCompareRaiseAnExceptionIfSolution1HasLessObjectivesThanTheOneRequested() {
+    exception.expect(JMetalException.class);
+    exception.expectMessage(containsString("The solution1 has 3 objectives and the objective "
+        + "to sort is 5"));
 
     comparator = new ObjectiveComparator<Solution<?>>(5, ObjectiveComparator.Ordering.DESCENDING) ;
 
-    DoubleProblem problem = new DummyDoubleProblem(2, 3, 0) ;
-    DoubleProblem problem2 = new DummyDoubleProblem(2, 6, 0) ;
+    DoubleSolution solution1 = mock(DoubleSolution.class) ;
+    DoubleSolution solution2 = mock(DoubleSolution.class) ;
 
-    DoubleSolution solution1 = problem.createSolution() ;
-    DoubleSolution solution2 = problem2.createSolution() ;
+    when(solution1.getNumberOfObjectives()).thenReturn(3) ;
+    when(solution2.getNumberOfObjectives()).thenReturn(6) ;
 
-    assertThrows(JMetalException.class, () -> comparator.compare(solution1, solution2)) ;
+    comparator.compare(solution1, solution2) ;
+
+    verify(solution1).getNumberOfObjectives();
+    verify(solution2).getNumberOfObjectives();
   }
 
-  @Test public void shouldCompareRaiseAnExceptionIfSolution2HasFewerObjectivesThanTheOneRequested() {
-    //exception.expect(JMetalException.class);
-    //exception.expectMessage(containsString("The solution2 has 5 objectives and the objective "
-    //    + "to sort is 5"));
+  @Test public void shouldCompareRaiseAnExceptionIfSolution2HasLessObjectivesThanTheOneRequested() {
+    exception.expect(JMetalException.class);
+    exception.expectMessage(containsString("The solution2 has 5 objectives and the objective "
+        + "to sort is 5"));
 
     comparator = new ObjectiveComparator<Solution<?>>(5, ObjectiveComparator.Ordering.DESCENDING) ;
 
-    DoubleProblem problem = new DummyDoubleProblem(2, 1, 0) ;
+    DoubleSolution solution1 = mock(DoubleSolution.class) ;
+    DoubleSolution solution2 = mock(DoubleSolution.class) ;
 
-    DoubleSolution solution1 = problem.createSolution() ;
-    DoubleSolution solution2 = problem.createSolution() ;
+    when(solution1.getNumberOfObjectives()).thenReturn(7) ;
+    when(solution2.getNumberOfObjectives()).thenReturn(5) ;
 
-    solution1.objectives()[0] = 7.0 ;
-    solution2.objectives()[0] = 5.0 ;
+    comparator.compare(solution1, solution2) ;
 
-    assertThrows(JMetalException.class, () -> comparator.compare(solution1, solution2)) ;
+    verify(solution1).getNumberOfObjectives();
+    verify(solution2).getNumberOfObjectives();
   }
 }

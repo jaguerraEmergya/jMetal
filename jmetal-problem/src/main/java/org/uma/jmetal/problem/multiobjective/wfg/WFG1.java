@@ -1,8 +1,8 @@
 package org.uma.jmetal.problem.multiobjective.wfg;
 
-import org.uma.jmetal.solution.doublesolution.DoubleSolution;
+import org.uma.jmetal.solution.DoubleSolution;
+import org.uma.jmetal.util.JMetalException;
 import org.uma.jmetal.util.JMetalLogger;
-import org.uma.jmetal.util.errorchecking.JMetalException;
 
 import java.util.logging.Level;
 
@@ -108,7 +108,7 @@ public class WFG1 extends WFG {
   /**
    * WFG1 t3 transformation
    *
-   * @throws JMetalException
+   * @throws org.uma.jmetal.util.JMetalException
    */
   public float[] t3(float[] z) throws JMetalException {
     float[] result = new float[z.length];
@@ -153,14 +153,14 @@ public class WFG1 extends WFG {
    * Evaluates a solution
    *
    * @param solution The solution to runAlgorithm
-   * @throws JMetalException
+   * @throws org.uma.jmetal.util.JMetalException
    */
-  public DoubleSolution evaluate(DoubleSolution solution) {
+  public void evaluate(DoubleSolution solution) {
     float[] variables = new float[getNumberOfVariables()];
     double[] x = new double[getNumberOfVariables()];
 
     for (int i = 0; i < getNumberOfVariables(); i++) {
-      x[i] = solution.variables().get(i);
+      x[i] = solution.getVariableValue(i);
     }
 
     for (int i = 0; i < getNumberOfVariables(); i++) {
@@ -170,8 +170,7 @@ public class WFG1 extends WFG {
     float[] f = evaluate(variables);
 
     for (int i = 0; i < f.length; i++) {
-      solution.objectives()[i] = f[i];
+      solution.setObjective(i, f[i]);
     }
-    return solution ;
   }
 }

@@ -1,7 +1,7 @@
 package org.uma.jmetal.algorithm.multiobjective.mombi.util;
 
 import org.uma.jmetal.solution.Solution;
-import org.uma.jmetal.util.errorchecking.JMetalException;
+import org.uma.jmetal.util.JMetalException;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -50,13 +50,13 @@ public class ASFUtilityFunctionSet<S extends Solution<?>> extends AbstractUtilit
 
 		double result = Double.NEGATIVE_INFINITY;
 		List<Double> weightVector 	 =  this.getWeightVector(vector);
-		List<Double> objectiveValues =  new ArrayList<>(solution.objectives().length);
-		for (int i = 0; i < solution.objectives().length;i++) 
+		List<Double> objectiveValues =  new ArrayList<>(solution.getNumberOfObjectives());
+		for (int i = 0; i < solution.getNumberOfObjectives();i++) 
 			if (normalizer==null) {
-        objectiveValues.add(solution.objectives()[i]);
+        objectiveValues.add(solution.getObjective(i));
       }
 			else {
-        objectiveValues.add(this.normalizer.normalize(solution.objectives()[i], i));
+        objectiveValues.add(this.normalizer.normalize(solution.getObjective(i), i));
       }
 		
 		for (int i = 0; i < weightVector.size(); i++) {

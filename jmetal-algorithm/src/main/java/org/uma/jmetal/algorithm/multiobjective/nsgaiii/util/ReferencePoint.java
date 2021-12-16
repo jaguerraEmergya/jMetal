@@ -6,7 +6,7 @@ import org.uma.jmetal.solution.Solution;
 import org.uma.jmetal.util.pseudorandom.JMetalRandom;
 
 import java.util.ArrayList;
-import java.util.Comparator;
+import java.util.Iterator;
 import java.util.List;
 
 /**
@@ -35,7 +35,7 @@ public class ReferencePoint<S extends Solution<?>> {
   public ReferencePoint(ReferencePoint<S> point) {
     position = new ArrayList<>(point.position.size());
     for (Double d : point.position) {
-      position.add(d);
+      position.add(new Double(d));
     }
     memberSize = 0 ;
     potentialMembers = new ArrayList<>();
@@ -44,10 +44,10 @@ public class ReferencePoint<S extends Solution<?>> {
   public void generateReferencePoints(
           List<ReferencePoint<S>> referencePoints,
           int numberOfObjectives,
-          int numberOfDivisions) {
+          List<Integer> numberOfDivisions) {
 
     ReferencePoint<S> refPoint = new ReferencePoint<>(numberOfObjectives) ;
-    generateRecursive(referencePoints, refPoint, numberOfObjectives, numberOfDivisions, numberOfDivisions, 0);
+    generateRecursive(referencePoints, refPoint, numberOfObjectives, numberOfDivisions.get(0), numberOfDivisions.get(0), 0);
   }
 
   private void generateRecursive(
@@ -78,17 +78,31 @@ public class ReferencePoint<S extends Solution<?>> {
     this.potentialMembers.add(new ImmutablePair<S,Double>(member_ind,distance) );
   }
 
-  public void sort() {
-    this.potentialMembers.sort(Comparator.comparing(Pair<S, Double>::getRight).reversed());
-  }
-
   public S FindClosestMember() {
-    return this.potentialMembers.remove(this.potentialMembers.size() - 1)
-            .getLeft();
+    double minDistance = Double.MAX_VALUE;
+    S closetMember = null;
+    for (Pair<S,Double> p : this.potentialMembers) {
+      if (p.getRight() < minDistance) {
+        minDistance = p.getRight();
+        closetMember = p.getLeft();
+      }
+    }
+
+    return closetMember;
   }
   
   public S RandomMember() {
     int index = this.potentialMembers.size()>1 ? JMetalRandom.getInstance().nextInt(0, this.potentialMembers.size()-1):0;
-    return this.potentialMembers.remove(index).getLeft();
+    return this.potentialMembers.get(index).getLeft();
+  }
+  
+  public void RemovePotentialMember(S solution) {
+    Iterator<Pair<S, Double>> it = this.potentialMembers.iterator();
+    while (it.hasNext()) {
+      if (it.next().getLeft().equals(solution)) {
+        it.remove();
+        break;
+      }
+    }
   }
 }

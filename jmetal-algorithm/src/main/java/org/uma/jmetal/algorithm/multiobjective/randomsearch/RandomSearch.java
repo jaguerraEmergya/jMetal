@@ -31,8 +31,9 @@ public class RandomSearch<S extends Solution<?>> implements Algorithm<List<S>> {
   }
 
   @Override public void run() {
+    S newSolution;
     for (int i = 0; i < maxEvaluations; i++) {
-      S newSolution = problem.createSolution() ;
+      newSolution = problem.createSolution() ;
       problem.evaluate(newSolution);
       nonDominatedArchive.add(newSolution);
     }

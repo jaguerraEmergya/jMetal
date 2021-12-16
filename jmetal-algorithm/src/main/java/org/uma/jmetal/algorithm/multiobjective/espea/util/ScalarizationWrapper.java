@@ -1,8 +1,8 @@
 package org.uma.jmetal.algorithm.multiobjective.espea.util;
 
-import org.uma.jmetal.solution.Solution;
-
 import java.util.List;
+
+import org.uma.jmetal.solution.Solution;
 
 /**
  * A class for simplifying the access to {@link ScalarizationUtils}.
@@ -105,6 +105,11 @@ public class ScalarizationWrapper {
      * they are computed on the fly.
      */
     private double[][] extremePoints;
+
+    /**
+     * A reference set.
+     */
+    private double[][] referenceSet;
   }
 
   /**

@@ -1,9 +1,9 @@
 package org.uma.jmetal.algorithm.impl;
 
 import org.uma.jmetal.algorithm.Algorithm;
-import org.uma.jmetal.operator.crossover.CrossoverOperator;
-import org.uma.jmetal.operator.mutation.MutationOperator;
-import org.uma.jmetal.operator.selection.SelectionOperator;
+import org.uma.jmetal.operator.CrossoverOperator;
+import org.uma.jmetal.operator.MutationOperator;
+import org.uma.jmetal.operator.SelectionOperator;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -290,7 +290,10 @@ public abstract class AbstractCoralReefsOptimization<S, R>
 
 			Collections.sort(population, comparator);
 
-			budders = new ArrayList<S>(population.subList(0, (int) Fa * population.size()));
+			budders = new ArrayList<S>((int) (Fa * population.size()));
+			for (int i = 0; i < budders.size(); i++) {
+				budders.add(population.get(i));
+			}
 
 			population = larvaeSettlementPhase(budders, population, coordinates);
 

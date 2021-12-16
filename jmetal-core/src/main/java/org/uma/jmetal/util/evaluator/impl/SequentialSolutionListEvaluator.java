@@ -1,7 +1,8 @@
 package org.uma.jmetal.util.evaluator.impl;
 
+import org.uma.jmetal.problem.ConstrainedProblem;
 import org.uma.jmetal.problem.Problem;
-import org.uma.jmetal.util.errorchecking.JMetalException;
+import org.uma.jmetal.util.JMetalException;
 import org.uma.jmetal.util.evaluator.SolutionListEvaluator;
 
 import java.util.List;
@@ -14,13 +15,19 @@ public class SequentialSolutionListEvaluator<S> implements SolutionListEvaluator
 
   @Override
   public List<S> evaluate(List<S> solutionList, Problem<S> problem) throws JMetalException {
-    solutionList.forEach(problem::evaluate);
+      if (problem instanceof ConstrainedProblem) {
+        solutionList.stream().forEach(s -> {
+          problem.evaluate(s);
+          ((ConstrainedProblem<S>) problem).evaluateConstraints(s);
+        });
+      } else {
+        solutionList.stream().forEach(s -> problem.evaluate(s));
+      }
 
     return solutionList;
   }
 
-  @Override
-  public void shutdown() {
-    // This method is an intentionally-blank override.
+  @Override public void shutdown() {
+    ;
   }
 }

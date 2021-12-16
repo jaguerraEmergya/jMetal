@@ -1,14 +1,15 @@
 package org.uma.jmetal.algorithm.singleobjective.differentialevolution;
 
 import org.uma.jmetal.algorithm.impl.AbstractDifferentialEvolution;
-import org.uma.jmetal.operator.crossover.impl.DifferentialEvolutionCrossover;
-import org.uma.jmetal.operator.selection.impl.DifferentialEvolutionSelection;
-import org.uma.jmetal.problem.doubleproblem.DoubleProblem;
-import org.uma.jmetal.solution.doublesolution.DoubleSolution;
+import org.uma.jmetal.operator.impl.crossover.DifferentialEvolutionCrossover;
+import org.uma.jmetal.operator.impl.selection.DifferentialEvolutionSelection;
+import org.uma.jmetal.problem.DoubleProblem;
+import org.uma.jmetal.solution.DoubleSolution;
 import org.uma.jmetal.util.comparator.ObjectiveComparator;
 import org.uma.jmetal.util.evaluator.SolutionListEvaluator;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 
@@ -36,8 +37,8 @@ public class DifferentialEvolution extends AbstractDifferentialEvolution<DoubleS
    * @param evaluator
    */
   public DifferentialEvolution(DoubleProblem problem, int maxEvaluations, int populationSize,
-                               DifferentialEvolutionCrossover crossoverOperator,
-                               DifferentialEvolutionSelection selectionOperator, SolutionListEvaluator<DoubleSolution> evaluator) {
+      DifferentialEvolutionCrossover crossoverOperator,
+      DifferentialEvolutionSelection selectionOperator, SolutionListEvaluator<DoubleSolution> evaluator) {
     setProblem(problem); ;
     this.maxEvaluations = maxEvaluations;
     this.populationSize = populationSize;
@@ -113,7 +114,7 @@ public class DifferentialEvolution extends AbstractDifferentialEvolution<DoubleS
       }
     }
 
-    pop.sort(comparator);
+    Collections.sort(pop, comparator) ;
     return pop;
   }
 
@@ -121,7 +122,7 @@ public class DifferentialEvolution extends AbstractDifferentialEvolution<DoubleS
    * Returns the best individual
    */
   @Override public DoubleSolution getResult() {
-    getPopulation().sort(comparator);
+    Collections.sort(getPopulation(), comparator) ;
 
     return getPopulation().get(0);
   }

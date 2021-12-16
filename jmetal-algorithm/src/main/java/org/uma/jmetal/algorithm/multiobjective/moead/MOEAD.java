@@ -1,11 +1,11 @@
 package org.uma.jmetal.algorithm.multiobjective.moead;
 
 import org.uma.jmetal.algorithm.multiobjective.moead.util.MOEADUtils;
-import org.uma.jmetal.operator.crossover.CrossoverOperator;
-import org.uma.jmetal.operator.crossover.impl.DifferentialEvolutionCrossover;
-import org.uma.jmetal.operator.mutation.MutationOperator;
+import org.uma.jmetal.operator.CrossoverOperator;
+import org.uma.jmetal.operator.MutationOperator;
+import org.uma.jmetal.operator.impl.crossover.DifferentialEvolutionCrossover;
 import org.uma.jmetal.problem.Problem;
-import org.uma.jmetal.solution.doublesolution.DoubleSolution;
+import org.uma.jmetal.solution.DoubleSolution;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -45,7 +45,7 @@ public class MOEAD extends AbstractMOEAD<DoubleSolution> {
     initializePopulation() ;
     initializeUniformWeight();
     initializeNeighborhood();
-    idealPoint.update(population); ;
+    initializeIdealPoint() ;
 
     evaluations = populationSize ;
     do {
@@ -67,7 +67,7 @@ public class MOEAD extends AbstractMOEAD<DoubleSolution> {
 
         evaluations++;
 
-        idealPoint.update(child.objectives());
+        updateIdealPoint(child);
         updateNeighborhood(child, subProblemId, neighborType);
       }
     } while (evaluations < maxEvaluations);

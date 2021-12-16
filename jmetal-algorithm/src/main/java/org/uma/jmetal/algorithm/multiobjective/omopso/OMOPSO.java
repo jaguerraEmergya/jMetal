@@ -1,19 +1,17 @@
 package org.uma.jmetal.algorithm.multiobjective.omopso;
 
 import org.uma.jmetal.algorithm.impl.AbstractParticleSwarmOptimization;
-import org.uma.jmetal.operator.mutation.impl.NonUniformMutation;
-import org.uma.jmetal.operator.mutation.impl.UniformMutation;
-import org.uma.jmetal.problem.doubleproblem.DoubleProblem;
-import org.uma.jmetal.solution.doublesolution.DoubleSolution;
+import org.uma.jmetal.operator.impl.mutation.NonUniformMutation;
+import org.uma.jmetal.operator.impl.mutation.UniformMutation;
+import org.uma.jmetal.problem.DoubleProblem;
+import org.uma.jmetal.solution.DoubleSolution;
 import org.uma.jmetal.util.archive.impl.CrowdingDistanceArchive;
 import org.uma.jmetal.util.archive.impl.NonDominatedSolutionListArchive;
-import org.uma.jmetal.util.bounds.Bounds;
+import org.uma.jmetal.util.comparator.CrowdingDistanceComparator;
 import org.uma.jmetal.util.comparator.DominanceComparator;
-import org.uma.jmetal.util.comparator.EpsilonDominanceComparator;
-import org.uma.jmetal.util.densityestimator.DensityEstimator;
-import org.uma.jmetal.util.densityestimator.impl.CrowdingDistanceDensityEstimator;
 import org.uma.jmetal.util.evaluator.SolutionListEvaluator;
 import org.uma.jmetal.util.pseudorandom.JMetalRandom;
+import org.uma.jmetal.util.solutionattribute.impl.CrowdingDistance;
 
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -27,7 +25,8 @@ public class OMOPSO extends AbstractParticleSwarmOptimization<DoubleSolution, Li
 
   SolutionListEvaluator<DoubleSolution> evaluator;
 
-  private final int swarmSize;
+  private int swarmSize;
+  private int archiveSize;
   private int maxIterations;
   private int currentIteration;
 
@@ -37,16 +36,16 @@ public class OMOPSO extends AbstractParticleSwarmOptimization<DoubleSolution, Li
 
   private double[][] speed;
 
-  private final Comparator<DoubleSolution> dominanceComparator;
-  private final Comparator<DoubleSolution> crowdingDistanceComparator;
+  private Comparator<DoubleSolution> dominanceComparator;
+  private Comparator<DoubleSolution> crowdingDistanceComparator;
 
-  private final UniformMutation uniformMutation;
-  private final NonUniformMutation nonUniformMutation;
+  private UniformMutation uniformMutation;
+  private NonUniformMutation nonUniformMutation;
 
   private double eta = 0.0075;
 
   private JMetalRandom randomGenerator;
-  private DensityEstimator<DoubleSolution> crowdingDistance;
+  private CrowdingDistance<DoubleSolution> crowdingDistance;
 
   /** Constructor */
   public OMOPSO(DoubleProblem problem, SolutionListEvaluator<DoubleSolution> evaluator,
@@ -57,33 +56,33 @@ public class OMOPSO extends AbstractParticleSwarmOptimization<DoubleSolution, Li
 
     this.swarmSize = swarmSize ;
     this.maxIterations = maxIterations ;
+    this.archiveSize = archiveSize ;
 
     this.uniformMutation = uniformMutation ;
     this.nonUniformMutation = nonUniformMutation ;
 
     localBest = new DoubleSolution[swarmSize];
-    leaderArchive = new CrowdingDistanceArchive<>(archiveSize);
-    epsilonArchive = new NonDominatedSolutionListArchive<>(new EpsilonDominanceComparator<>(eta));
+    leaderArchive = new CrowdingDistanceArchive<DoubleSolution>(this.archiveSize);
+    epsilonArchive = new NonDominatedSolutionListArchive<DoubleSolution>(new DominanceComparator<DoubleSolution>(eta));
 
-    crowdingDistance = new CrowdingDistanceDensityEstimator<>();
-
-    dominanceComparator = new DominanceComparator<>();
-    crowdingDistanceComparator = crowdingDistance.getComparator();
+    dominanceComparator = new DominanceComparator<DoubleSolution>();
+    crowdingDistanceComparator = new CrowdingDistanceComparator<DoubleSolution>();
 
     speed = new double[swarmSize][problem.getNumberOfVariables()];
 
     randomGenerator = JMetalRandom.getInstance() ;
+    crowdingDistance = new CrowdingDistance<DoubleSolution>();
   }
 
 
   @Override protected void initProgress() {
     currentIteration = 1;
-    crowdingDistance.compute(leaderArchive.getSolutionList());
+    crowdingDistance.computeDensityEstimator(leaderArchive.getSolutionList());
   }
 
   @Override protected void updateProgress() {
     currentIteration += 1;
-    crowdingDistance.compute(leaderArchive.getSolutionList());
+    crowdingDistance.computeDensityEstimator(leaderArchive.getSolutionList());
   }
 
   @Override protected boolean isStoppingConditionReached() {
@@ -163,11 +162,11 @@ public class OMOPSO extends AbstractParticleSwarmOptimization<DoubleSolution, Li
       W = randomGenerator.nextDouble(0.1, 0.5);
       //
 
-      for (int var = 0; var < particle.variables().size(); var++) {
+      for (int var = 0; var < particle.getNumberOfVariables(); var++) {
         //Computing the velocity of this particle
-        speed[i][var] = W * speed[i][var] + C1 * r1 * (bestParticle.variables().get(var) -
-            particle.variables().get(var)) +
-            C2 * r2 * (bestGlobal.variables().get(var) - particle.variables().get(var));
+        speed[i][var] = W * speed[i][var] + C1 * r1 * (bestParticle.getVariableValue(var) -
+            particle.getVariableValue(var)) +
+            C2 * r2 * (bestGlobal.getVariableValue(var) - particle.getVariableValue(var));
       }
     }
   }
@@ -177,17 +176,14 @@ public class OMOPSO extends AbstractParticleSwarmOptimization<DoubleSolution, Li
   protected void updatePosition(List<DoubleSolution> swarm)  {
     for (int i = 0; i < swarmSize; i++) {
       DoubleSolution particle = swarm.get(i);
-      for (int var = 0; var < particle.variables().size(); var++) {
-        particle.variables().set(var, particle.variables().get(var) + speed[i][var]);
-        Bounds<Double> bounds = problem.getBoundsForVariables().get(var) ;
-        Double lowerBound = bounds.getLowerBound() ;
-        Double upperBound = bounds.getUpperBound() ;
-        if (particle.variables().get(var) < lowerBound) {
-          particle.variables().set(var, lowerBound);
+      for (int var = 0; var < particle.getNumberOfVariables(); var++) {
+        particle.setVariableValue(var, particle.getVariableValue(var) + speed[i][var]);
+        if (particle.getVariableValue(var) < problem.getLowerBound(var)) {
+          particle.setVariableValue(var, problem.getLowerBound(var));
           speed[i][var] = speed[i][var] * -1.0;
         }
-        if (particle.variables().get(var) > upperBound) {
-          particle.variables().set(var, upperBound);
+        if (particle.getVariableValue(var) > problem.getUpperBound(var)) {
+          particle.setVariableValue(var, problem.getUpperBound(var));
           speed[i][var] = speed[i][var] * -1.0;
         }
       }
@@ -238,6 +234,10 @@ public class OMOPSO extends AbstractParticleSwarmOptimization<DoubleSolution, Li
         epsilonArchive.add((DoubleSolution) particle.copy());
       }
     }
+  }
+
+  protected void tearDown() {
+    evaluator.shutdown();
   }
 
   @Override public String getName() {

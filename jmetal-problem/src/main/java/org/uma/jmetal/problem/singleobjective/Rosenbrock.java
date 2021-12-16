@@ -1,7 +1,7 @@
 package org.uma.jmetal.problem.singleobjective;
 
-import org.uma.jmetal.problem.doubleproblem.impl.AbstractDoubleProblem;
-import org.uma.jmetal.solution.doublesolution.DoubleSolution;
+import org.uma.jmetal.problem.impl.AbstractDoubleProblem;
+import org.uma.jmetal.solution.DoubleSolution;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -29,18 +29,19 @@ public class Rosenbrock extends AbstractDoubleProblem {
       upperLimit.add(5.12);
     }
 
-    setVariableBounds(lowerLimit, upperLimit);
+    setLowerLimit(lowerLimit);
+    setUpperLimit(upperLimit);
   }
 
   /** Evaluate() method */
   @Override
-  public DoubleSolution evaluate(DoubleSolution solution) {
+  public void evaluate(DoubleSolution solution) {
     int numberOfVariables = getNumberOfVariables() ;
 
     double[] x = new double[numberOfVariables] ;
 
     for (int i = 0; i < numberOfVariables; i++) {
-      x[i] = solution.variables().get(i) ;
+      x[i] = solution.getVariableValue(i) ;
     }
 
     double sum = 0.0;
@@ -51,9 +52,7 @@ public class Rosenbrock extends AbstractDoubleProblem {
       sum += (100.0 * temp1 * temp1) + (temp2 * temp2);
     }
 
-    solution.objectives()[0] = sum;
-
-    return solution ;
+    solution.setObjective(0, sum);
   }
 }
 

@@ -5,9 +5,8 @@
     <parent>
         <groupId>org.uma.jmetal</groupId>
         <artifactId>jmetal</artifactId>
-        <version>5.12-SNAPSHOT</version>
+        <version>5.5.3-SNAPSHOT</version>
     </parent>
-
     <artifactId>jmetal-algorithm</artifactId>
     <packaging>jar</packaging>
 
@@ -64,26 +63,17 @@
         <dependency>
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
+            <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.mockito</groupId>
-            <artifactId>mockito-all</artifactId>
+            <artifactId>mockito-core</artifactId>
             <version>1.10.8</version>
             <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.springframework</groupId>
             <artifactId>spring-test</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>com.fuzzylite</groupId>
-            <artifactId>jfuzzylite</artifactId>
-            <version>5.0</version>
-        </dependency>
-        <dependency>
-            <groupId>com.github.chwagnlucid</groupId>
-            <artifactId>Juzzy</artifactId>
-            <version>2.0</version>
         </dependency>
     </dependencies>
 </project>

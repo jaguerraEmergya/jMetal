@@ -9,12 +9,11 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * This class implements a neighborhood that select the k-nearest solutions according to a
- * distance measure. By default, the Euclidean distance between objectives is used.
+ * This class implements a neighborhood that select the k-nearest solutions according to a distance measure. By default,
+ * the Euclidean distance between objectives is used.
  *
  * @param <S>
  */
-@SuppressWarnings("serial")
 public class KNearestNeighborhood<S extends Solution<?>> implements Neighborhood<S> {
   private int neighborSize;
   private Distance<S, S> distance;
@@ -35,7 +34,7 @@ public class KNearestNeighborhood<S extends Solution<?>> implements Neighborhood
     int[] indexes = new int[solutionList.size()];
 
     for (int i = 0; i < solutionList.size(); i++) {
-      distances[i] = this.distance.compute(solutionList.get(i), solutionList.get(solutionIndex));
+      distances[i] = this.distance.getDistance(solutionList.get(i), solutionList.get(solutionIndex));
       indexes[i] = i;
     }
 

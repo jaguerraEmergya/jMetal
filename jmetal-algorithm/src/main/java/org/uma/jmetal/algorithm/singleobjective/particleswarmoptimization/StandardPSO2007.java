@@ -2,10 +2,9 @@ package org.uma.jmetal.algorithm.singleobjective.particleswarmoptimization;
 
 import org.uma.jmetal.algorithm.impl.AbstractParticleSwarmOptimization;
 import org.uma.jmetal.operator.Operator;
-import org.uma.jmetal.operator.selection.impl.BestSolutionSelection;
-import org.uma.jmetal.problem.doubleproblem.DoubleProblem;
-import org.uma.jmetal.solution.doublesolution.DoubleSolution;
-import org.uma.jmetal.util.bounds.Bounds;
+import org.uma.jmetal.operator.impl.selection.BestSolutionSelection;
+import org.uma.jmetal.problem.DoubleProblem;
+import org.uma.jmetal.solution.DoubleSolution;
 import org.uma.jmetal.util.comparator.ObjectiveComparator;
 import org.uma.jmetal.util.evaluator.SolutionListEvaluator;
 import org.uma.jmetal.util.neighborhood.impl.AdaptiveRandomNeighborhood;
@@ -149,10 +148,9 @@ public class StandardPSO2007 extends AbstractParticleSwarmOptimization<DoubleSol
     for (int i = 0; i < swarm.size(); i++) {
       DoubleSolution particle = swarm.get(i);
       for (int j = 0; j < problem.getNumberOfVariables(); j++) {
-        Bounds<Double> bounds = particle.getBounds(j) ;
         speed[i][j] =
-                (randomGenerator.nextDouble(bounds.getLowerBound(), bounds.getUpperBound())
-                        - particle.variables().get(j)) / 2.0;
+                (randomGenerator.nextDouble(particle.getLowerBound(j), particle.getUpperBound(j))
+                        - particle.getVariableValue(j)) / 2.0;
       }
     }
   }
@@ -168,17 +166,17 @@ public class StandardPSO2007 extends AbstractParticleSwarmOptimization<DoubleSol
       r2 = randomGenerator.nextDouble(0, c);
 
       if (localBest[i] != neighborhoodBest[i]) {
-        for (int var = 0; var < particle.variables().size(); var++) {
+        for (int var = 0; var < particle.getNumberOfVariables(); var++) {
           speed[i][var] = weight * speed[i][var] +
-                  r1 * (localBest[i].variables().get(var) - particle.variables().get(var)) +
-                  r2 * (neighborhoodBest[i].variables().get(var) - particle.variables().get
+                  r1 * (localBest[i].getVariableValue(var) - particle.getVariableValue(var)) +
+                  r2 * (neighborhoodBest[i].getVariableValue(var) - particle.getVariableValue
                           (var));
         }
       } else {
-        for (int var = 0; var < particle.variables().size(); var++) {
+        for (int var = 0; var < particle.getNumberOfVariables(); var++) {
           speed[i][var] = weight * speed[i][var] +
-                  r1 * (localBest[i].variables().get(var) -
-                          particle.variables().get(var));
+                  r1 * (localBest[i].getVariableValue(var) -
+                          particle.getVariableValue(var));
         }
       }
     }
@@ -188,18 +186,15 @@ public class StandardPSO2007 extends AbstractParticleSwarmOptimization<DoubleSol
   public void updatePosition(List<DoubleSolution> swarm) {
     for (int i = 0; i < swarmSize; i++) {
       DoubleSolution particle = swarm.get(i);
-      for (int var = 0; var < particle.variables().size(); var++) {
-        particle.variables().set(var, particle.variables().get(var) + speed[i][var]);
+      for (int var = 0; var < particle.getNumberOfVariables(); var++) {
+        particle.setVariableValue(var, particle.getVariableValue(var) + speed[i][var]);
 
-        Bounds<Double> bounds = problem.getBoundsForVariables().get(var) ;
-        Double lowerBound = bounds.getLowerBound() ;
-        Double upperBound = bounds.getUpperBound() ;
-        if (particle.variables().get(var) < lowerBound) {
-          particle.variables().set(var, lowerBound);
+        if (particle.getVariableValue(var) < problem.getLowerBound(var)) {
+          particle.setVariableValue(var, problem.getLowerBound(var));
           speed[i][var] = 0;
         }
-        if (particle.variables().get(var) > upperBound) {
-          particle.variables().set(var, upperBound);
+        if (particle.getVariableValue(var) > problem.getUpperBound(var)) {
+          particle.setVariableValue(var, problem.getUpperBound(var));
           speed[i][var] = 0;
         }
       }
@@ -226,13 +221,13 @@ public class StandardPSO2007 extends AbstractParticleSwarmOptimization<DoubleSol
     DoubleSolution bestSolution = findBestSolution.execute(swarm);
 
     if (bestFoundParticle == null) {
-      bestFoundParticle = (DoubleSolution) bestSolution.copy();
+      bestFoundParticle = bestSolution;
     } else {
-      if (bestSolution.objectives()[objectiveId] == bestFoundParticle.objectives()[0]) {
+      if (bestSolution.getObjective(objectiveId) == bestFoundParticle.getObjective(0)) {
         neighborhood.recompute();
       }
-      if (bestSolution.objectives()[objectiveId] < bestFoundParticle.objectives()[0]) {
-        bestFoundParticle = (DoubleSolution) bestSolution.copy();
+      if (bestSolution.getObjective(objectiveId) < bestFoundParticle.getObjective(0)) {
+        bestFoundParticle = bestSolution;
       }
     }
   }
@@ -240,7 +235,7 @@ public class StandardPSO2007 extends AbstractParticleSwarmOptimization<DoubleSol
   @Override
   public void updateParticlesMemory(List<DoubleSolution> swarm) {
     for (int i = 0; i < swarm.size(); i++) {
-      if ((swarm.get(i).objectives()[objectiveId] < localBest[i].objectives()[0])) {
+      if ((swarm.get(i).getObjective(objectiveId) < localBest[i].getObjective(0))) {
         localBest[i] = (DoubleSolution) swarm.get(i).copy();
       }
     }
@@ -256,8 +251,8 @@ public class StandardPSO2007 extends AbstractParticleSwarmOptimization<DoubleSol
 
     for (DoubleSolution solution : neighborhood.getNeighbors(getSwarm(), i)) {
       int solutionPositionInSwarm = positionInSwarm.getAttribute(solution);
-      if ((bestLocalBestSolution == null) || (bestLocalBestSolution.objectives()[0]
-              > localBest[solutionPositionInSwarm].objectives()[0])) {
+      if ((bestLocalBestSolution == null) || (bestLocalBestSolution.getObjective(0)
+              > localBest[solutionPositionInSwarm].getObjective(0))) {
         bestLocalBestSolution = localBest[solutionPositionInSwarm];
       }
     }

@@ -2,13 +2,15 @@ package org.uma.jmetal.util.archive.impl;
 
 import org.junit.Test;
 import org.springframework.test.util.ReflectionTestUtils;
-import org.uma.jmetal.problem.doubleproblem.impl.DummyDoubleProblem;
-import org.uma.jmetal.solution.doublesolution.DoubleSolution;
-import org.uma.jmetal.solution.integersolution.IntegerSolution;
+import org.uma.jmetal.solution.IntegerSolution;
 import org.uma.jmetal.util.comparator.DominanceComparator;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertSame;
+import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 /**
  * @author Antonio J. Nebro <ajnebro@uma.es>.
@@ -58,40 +60,40 @@ public class NonDominatedSolutionListArchiveTest {
 
   @Test
   public void shouldAddADominatedSolutionInAnArchiveOfSize1DiscardTheNewSolution() {
-    NonDominatedSolutionListArchive<DoubleSolution> archive ;
+    NonDominatedSolutionListArchive<IntegerSolution> archive ;
     archive = new NonDominatedSolutionListArchive<>() ;
 
-    DoubleSolution solution1 = new DummyDoubleProblem(2, 2, 0).createSolution() ;
-    solution1.objectives()[0] = 1.0 ;
-    solution1.objectives()[1] = 1.0 ;
+    IntegerSolution solution = mock(IntegerSolution.class) ;
+    when(solution.getNumberOfObjectives()).thenReturn(2) ;
+    when(solution.getObjective(0)).thenReturn(1.0) ;
+    when(solution.getObjective(1)).thenReturn(1.0) ;
+    archive.add(solution) ;
 
-    archive.add(solution1) ;
-
-    DoubleSolution solution2 = new DummyDoubleProblem(2, 2, 0).createSolution() ;
-    solution2.objectives()[0] = 2.0 ;
-    solution2.objectives()[1] = 2.0 ;
-
+    IntegerSolution solution2 = mock(IntegerSolution.class) ;
+    when(solution2.getNumberOfObjectives()).thenReturn(2) ;
+    when(solution2.getObjective(0)).thenReturn(2.0) ;
+    when(solution2.getObjective(1)).thenReturn(2.0) ;
     archive.add(solution2) ;
 
     assertEquals(1, archive.size()) ;
-    assertSame(solution1, archive.get(0)) ;
+    assertSame(solution, archive.get(0)) ;
   }
 
   @Test
   public void shouldAddADominantSolutionInAnArchiveOfSize1DiscardTheExistingSolution() {
-    NonDominatedSolutionListArchive<DoubleSolution> archive ;
+    NonDominatedSolutionListArchive<IntegerSolution> archive ;
     archive = new NonDominatedSolutionListArchive<>() ;
 
-    DoubleSolution solution1 = new DummyDoubleProblem(2, 2, 0).createSolution() ;
-    solution1.objectives()[0] = 1.0 ;
-    solution1.objectives()[1] = 1.0 ;
+    IntegerSolution solution = mock(IntegerSolution.class) ;
+    when(solution.getNumberOfObjectives()).thenReturn(2) ;
+    when(solution.getObjective(0)).thenReturn(1.0) ;
+    when(solution.getObjective(1)).thenReturn(1.0) ;
+    archive.add(solution) ;
 
-    archive.add(solution1) ;
-
-    DoubleSolution solution2 = new DummyDoubleProblem(2, 2, 0).createSolution() ;
-    solution2.objectives()[0] = 0.0 ;
-    solution2.objectives()[1] = 0.0 ;
-
+    IntegerSolution solution2 = mock(IntegerSolution.class) ;
+    when(solution2.getNumberOfObjectives()).thenReturn(2) ;
+    when(solution2.getObjective(0)).thenReturn(0.0) ;
+    when(solution2.getObjective(1)).thenReturn(0.0) ;
     boolean result = archive.add(solution2) ;
 
     assertEquals(1, archive.size()) ;
@@ -101,55 +103,53 @@ public class NonDominatedSolutionListArchiveTest {
 
   @Test
   public void shouldAddADominantSolutionInAnArchiveOfSize3DiscardTheRestOfSolutions() {
-    NonDominatedSolutionListArchive<DoubleSolution> archive ;
+    NonDominatedSolutionListArchive<IntegerSolution> archive ;
     archive = new NonDominatedSolutionListArchive<>() ;
 
-    DoubleSolution solution1 = new DummyDoubleProblem(2, 2, 0).createSolution() ;
-    solution1.objectives()[0] = 1.0 ;
-    solution1.objectives()[1] = 1.0 ;
+    IntegerSolution solution = mock(IntegerSolution.class) ;
+    when(solution.getNumberOfObjectives()).thenReturn(2) ;
+    when(solution.getObjective(0)).thenReturn(1.0) ;
+    when(solution.getObjective(1)).thenReturn(1.0) ;
+    archive.add(solution) ;
 
-    archive.add(solution1) ;
-
-    DoubleSolution solution2 = new DummyDoubleProblem(2, 2, 0).createSolution() ;
-    solution2.objectives()[0] = 0.0 ;
-    solution2.objectives()[1] = 2.0 ;
-
+    IntegerSolution solution2 = mock(IntegerSolution.class) ;
+    when(solution2.getNumberOfObjectives()).thenReturn(2) ;
+    when(solution2.getObjective(0)).thenReturn(0.0) ;
+    when(solution2.getObjective(1)).thenReturn(2.0) ;
     archive.add(solution2) ;
 
-    DoubleSolution solution3 = new DummyDoubleProblem(2, 2, 0).createSolution() ;
-    solution3.objectives()[0] = 0.5 ;
-    solution3.objectives()[1] = 1.5 ;
-
+    IntegerSolution solution3 = mock(IntegerSolution.class) ;
+    when(solution3.getNumberOfObjectives()).thenReturn(2) ;
+    when(solution3.getObjective(0)).thenReturn(0.5) ;
+    when(solution3.getObjective(1)).thenReturn(1.5) ;
     archive.add(solution3) ;
 
-    DoubleSolution solution4 = new DummyDoubleProblem(2, 2, 0).createSolution() ;
-    solution4.objectives()[0] = 0.0 ;
-    solution4.objectives()[1] = 0.0 ;
-
-    archive.add(solution3) ;
-
-    boolean result = archive.add(solution4) ;
+    IntegerSolution dominantSolution = mock(IntegerSolution.class) ;
+    when(dominantSolution.getNumberOfObjectives()).thenReturn(2) ;
+    when(dominantSolution.getObjective(0)).thenReturn(0.0) ;
+    when(dominantSolution.getObjective(1)).thenReturn(0.0) ;
+    boolean result = archive.add(dominantSolution) ;
 
     assertEquals(1, archive.size()) ;
     assertTrue(result) ;
-    assertSame(solution4, archive.get(0)) ;
+    assertSame(dominantSolution, archive.get(0)) ;
   }
 
   @Test
   public void shouldAddANonDominantSolutionInAnArchiveOfSize1IncorporateTheNewSolution() {
-    NonDominatedSolutionListArchive<DoubleSolution> archive ;
+    NonDominatedSolutionListArchive<IntegerSolution> archive ;
     archive = new NonDominatedSolutionListArchive<>() ;
 
-    DoubleSolution solution1 = new DummyDoubleProblem(2, 2, 0).createSolution() ;
-    solution1.objectives()[0] = 1.0 ;
-    solution1.objectives()[1] = 1.0 ;
+    IntegerSolution solution = mock(IntegerSolution.class) ;
+    when(solution.getNumberOfObjectives()).thenReturn(2) ;
+    when(solution.getObjective(0)).thenReturn(1.0) ;
+    when(solution.getObjective(1)).thenReturn(1.0) ;
+    archive.add(solution) ;
 
-    archive.add(solution1) ;
-
-    DoubleSolution solution2 = new DummyDoubleProblem(2, 2, 0).createSolution() ;
-    solution2.objectives()[0] = 2.0 ;
-    solution2.objectives()[1] = 0.0 ;
-
+    IntegerSolution solution2 = mock(IntegerSolution.class) ;
+    when(solution2.getNumberOfObjectives()).thenReturn(2) ;
+    when(solution2.getObjective(0)).thenReturn(2.0) ;
+    when(solution2.getObjective(1)).thenReturn(0.0) ;
     archive.add(solution2) ;
 
     assertEquals(2, archive.size()) ;
@@ -157,30 +157,30 @@ public class NonDominatedSolutionListArchiveTest {
 
   @Test
   public void shouldAddASolutionEqualsToOneAlreadyInTheArchiveDoNothing() {
-    NonDominatedSolutionListArchive<DoubleSolution> archive ;
+    NonDominatedSolutionListArchive<IntegerSolution> archive ;
     archive = new NonDominatedSolutionListArchive<>() ;
 
-    DoubleSolution solution1 = new DummyDoubleProblem(2, 2, 0).createSolution() ;
-    solution1.objectives()[0] = 1.0 ;
-    solution1.objectives()[1] = 1.0 ;
+    IntegerSolution solution = mock(IntegerSolution.class) ;
+    when(solution.getNumberOfObjectives()).thenReturn(2) ;
+    when(solution.getObjective(0)).thenReturn(1.0) ;
+    when(solution.getObjective(1)).thenReturn(1.0) ;
+    archive.add(solution) ;
 
-    archive.add(solution1) ;
-
-    DoubleSolution solution2 = new DummyDoubleProblem(2, 2, 0).createSolution() ;
-    solution2.objectives()[0] = 2.0 ;
-    solution2.objectives()[1] = 0.0 ;
-
+    IntegerSolution solution2 = mock(IntegerSolution.class) ;
+    when(solution2.getNumberOfObjectives()).thenReturn(2) ;
+    when(solution2.getObjective(0)).thenReturn(2.0) ;
+    when(solution2.getObjective(1)).thenReturn(0.0) ;
     archive.add(solution2) ;
 
-    DoubleSolution equalSolution = new DummyDoubleProblem(2, 2, 0).createSolution() ;
-    equalSolution.objectives()[0] = 1.0 ;
-    equalSolution.objectives()[1] = 1.0 ;
-
+    IntegerSolution equalSolution = mock(IntegerSolution.class) ;
+    when(equalSolution.getNumberOfObjectives()).thenReturn(2) ;
+    when(equalSolution.getObjective(0)).thenReturn(1.0) ;
+    when(equalSolution.getObjective(1)).thenReturn(1.0) ;
     boolean result = archive.add(equalSolution) ;
 
     assertEquals(2, archive.size()) ;
     assertFalse(result) ;
-    assertTrue(archive.getSolutionList().contains(solution1) ||
+    assertTrue(archive.getSolutionList().contains(solution) ||
             archive.getSolutionList().contains(equalSolution)) ;
   }
 
@@ -199,16 +199,17 @@ public class NonDominatedSolutionListArchiveTest {
 
   @Test
   public void shouldJoinWithAnEmptyArchivesRemainTheArchiveWithTheSameNumberOfSolutions() {
-    DoubleSolution solution1 = new DummyDoubleProblem(2, 2, 0).createSolution() ;
-    solution1.objectives()[0] = 1.0 ;
-    solution1.objectives()[1] = 1.0 ;
-
-    NonDominatedSolutionListArchive<DoubleSolution> archive1 ;
+    NonDominatedSolutionListArchive<IntegerSolution> archive1 ;
     archive1 = new NonDominatedSolutionListArchive<>() ;
 
-    archive1.add(solution1) ;
+    IntegerSolution solution = mock(IntegerSolution.class) ;
+    when(solution.getNumberOfObjectives()).thenReturn(2) ;
+    when(solution.getObjective(0)).thenReturn(1.0) ;
+    when(solution.getObjective(1)).thenReturn(1.0) ;
+    archive1.add(solution) ;
 
-    NonDominatedSolutionListArchive<DoubleSolution> archive2 ;
+
+    NonDominatedSolutionListArchive<IntegerSolution> archive2 ;
     archive2 = new NonDominatedSolutionListArchive<>() ;
 
     archive1.join(archive2) ;
@@ -218,21 +219,22 @@ public class NonDominatedSolutionListArchiveTest {
 
   @Test
   public void shouldJoinAnEAnEmptyArchiveProduceAnArchiveWithTheSameSolutions() {
-    NonDominatedSolutionListArchive<DoubleSolution> archive1 ;
+    NonDominatedSolutionListArchive<IntegerSolution> archive1 ;
     archive1 = new NonDominatedSolutionListArchive<>() ;
 
-    NonDominatedSolutionListArchive<DoubleSolution> archive2 ;
+    NonDominatedSolutionListArchive<IntegerSolution> archive2 ;
     archive2 = new NonDominatedSolutionListArchive<>() ;
 
-    DoubleSolution solution1 = new DummyDoubleProblem(2, 2, 0).createSolution() ;
-    solution1.objectives()[0] = 1.0 ;
-    solution1.objectives()[1] = 2.0 ;
+    IntegerSolution solution = mock(IntegerSolution.class) ;
+    when(solution.getNumberOfObjectives()).thenReturn(2) ;
+    when(solution.getObjective(0)).thenReturn(1.0) ;
+    when(solution.getObjective(1)).thenReturn(2.0) ;
+    IntegerSolution solution2 = mock(IntegerSolution.class) ;
+    when(solution2.getNumberOfObjectives()).thenReturn(2) ;
+    when(solution2.getObjective(0)).thenReturn(2.0) ;
+    when(solution2.getObjective(1)).thenReturn(1.0) ;
 
-    DoubleSolution solution2 = new DummyDoubleProblem(2, 2, 0).createSolution() ;
-    solution2.objectives()[0] = 2.0 ;
-    solution2.objectives()[1] = 1.0 ;
-
-    archive2.add(solution1) ;
+    archive2.add(solution) ;
     archive2.add(solution2) ;
 
     archive1.join(archive2) ;

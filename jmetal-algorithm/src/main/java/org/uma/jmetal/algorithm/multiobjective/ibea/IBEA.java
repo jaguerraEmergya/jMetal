@@ -1,9 +1,9 @@
 package org.uma.jmetal.algorithm.multiobjective.ibea;
 
 import org.uma.jmetal.algorithm.Algorithm;
-import org.uma.jmetal.operator.crossover.CrossoverOperator;
-import org.uma.jmetal.operator.mutation.MutationOperator;
-import org.uma.jmetal.operator.selection.SelectionOperator;
+import org.uma.jmetal.operator.CrossoverOperator;
+import org.uma.jmetal.operator.MutationOperator;
+import org.uma.jmetal.operator.SelectionOperator;
 import org.uma.jmetal.problem.Problem;
 import org.uma.jmetal.solution.Solution;
 import org.uma.jmetal.util.SolutionListUtils;
@@ -116,7 +116,7 @@ public class IBEA<S extends Solution<?>> implements Algorithm<List<S>> {
   }
 
   @Override public List<S> getResult() {
-    return SolutionListUtils.getNonDominatedSolutions(archive);
+    return SolutionListUtils.getNondominatedSolutions(archive);
   }
 
   /**
@@ -132,11 +132,11 @@ public class IBEA<S extends Solution<?>> implements Algorithm<List<S>> {
     r = rho * (maximumValues[d - 1] - minimumValues[d - 1]);
     max = minimumValues[d - 1] + r;
 
-    a = solutionA.objectives()[d-1];
+    a = solutionA.getObjective(d - 1);
     if (solutionB == null) {
       b = max;
     } else {
-      b = solutionB.objectives()[d - 1];
+      b = solutionB.getObjective(d - 1);
     }
 
     if (d == 1) {
@@ -234,7 +234,7 @@ public class IBEA<S extends Solution<?>> implements Algorithm<List<S>> {
 
     for (S solution : solutionSet) {
       for (int obj = 0; obj < problem.getNumberOfObjectives(); obj++) {
-        double value = solution.objectives()[obj];
+        double value = solution.getObjective(obj);
         if (value > maximumValues[obj]) {
           maximumValues[obj] = value;
         }

@@ -1,10 +1,12 @@
 package org.uma.jmetal.qualityindicator.impl;
 
-import org.uma.jmetal.qualityindicator.QualityIndicator;
-import org.uma.jmetal.util.VectorUtils;
-import org.uma.jmetal.util.errorchecking.Check;
+import org.uma.jmetal.solution.Solution;
+import org.uma.jmetal.util.front.Front;
+import org.uma.jmetal.util.front.imp.ArrayFront;
+import org.uma.jmetal.util.front.util.FrontUtils;
 
 import java.io.FileNotFoundException;
+import java.util.List;
 
 /**
  * This class implements the inverted generational distance metric.
@@ -17,7 +19,7 @@ import java.io.FileNotFoundException;
  * @author Juan J. Durillo
  */
 @SuppressWarnings("serial")
-public class InvertedGenerationalDistance extends QualityIndicator {
+public class InvertedGenerationalDistance<S extends Solution<?>> extends GenericIndicator<S> {
 
   private double pow = 2.0;
 
@@ -30,32 +32,41 @@ public class InvertedGenerationalDistance extends QualityIndicator {
   /**
    * Constructor
    *
-   * @param referenceFront
+   * @param referenceParetoFrontFile
    * @throws FileNotFoundException
    */
-  public InvertedGenerationalDistance(double[][] referenceFront) {
-    super(referenceFront) ;
+  public InvertedGenerationalDistance(String referenceParetoFrontFile, double p) throws FileNotFoundException {
+    super(referenceParetoFrontFile) ;
+    pow = p ;
   }
 
   /**
    * Constructor
    *
-   * @param referenceFront
+   * @param referenceParetoFrontFile
    * @throws FileNotFoundException
    */
-  public InvertedGenerationalDistance(double[][] referenceFront, double pow) {
-    super(referenceFront) ;
-    this.pow = pow ;
+  public InvertedGenerationalDistance(String referenceParetoFrontFile) throws FileNotFoundException {
+    this(referenceParetoFrontFile, 2.0) ;
+  }
+
+  /**
+   * Constructor
+   *
+   * @param referenceParetoFront
+   * @throws FileNotFoundException
+   */
+  public InvertedGenerationalDistance(Front referenceParetoFront) {
+    super(referenceParetoFront) ;
   }
 
   /**
    * Evaluate() method
-   * @param front
+   * @param solutionList
    * @return
    */
-  @Override public double compute(double[][] front) {
-    Check.notNull(front);
-    return invertedGenerationalDistance(front, referenceFront);
+  @Override public Double evaluate(List<S> solutionList) {
+    return invertedGenerationalDistance(new ArrayFront(solutionList), referenceParetoFront);
   }
 
   /**
@@ -64,15 +75,16 @@ public class InvertedGenerationalDistance extends QualityIndicator {
    * @param front The front
    * @param referenceFront The reference pareto front
    */
-  public double invertedGenerationalDistance(double[][] front, double[][] referenceFront) {
+  public double invertedGenerationalDistance(Front front, Front referenceFront) {
     double sum = 0.0;
-    for (double[] vector : referenceFront) {
-      sum += Math.pow(VectorUtils.distanceToClosestVector(vector, front), pow);
+    for (int i = 0 ; i < referenceFront.getNumberOfPoints(); i++) {
+      sum += Math.pow(FrontUtils.distanceToClosestPoint(referenceFront.getPoint(i),
+          front), pow);
     }
 
     sum = Math.pow(sum, 1.0 / pow);
 
-    return sum / referenceFront.length;
+    return sum / referenceFront.getNumberOfPoints();
   }
 
   @Override public String getName() {

@@ -1,11 +1,15 @@
 package org.uma.jmetal.util.neighborhood.impl;
 
 import org.apache.commons.math3.ml.distance.EuclideanDistance;
-import org.uma.jmetal.solution.Solution;
-import org.uma.jmetal.util.errorchecking.JMetalException;
+import org.uma.jmetal.util.JMetalException;
 import org.uma.jmetal.util.neighborhood.Neighborhood;
 
-import java.io.*;
+import java.io.BufferedReader;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.StringTokenizer;
@@ -15,20 +19,19 @@ import java.util.StringTokenizer;
  *
  * @author Antonio J. Nebro <antonio@lcc.uma.es>
  */
-@SuppressWarnings("serial")
-public class WeightVectorNeighborhood<S extends Solution<?>> implements Neighborhood<S> {
+public class WeightVectorNeighborhood<S> implements Neighborhood<S> {
   private int numberOfWeightVectors;
   private int weightVectorSize;
   private int[][] neighborhood;
   private double[][] weightVector;
-  private int neighborhoodSize;
+  private int neighborSize;
 
-  public WeightVectorNeighborhood(int numberOfWeightVectors, int neighborhoodSize) {
+  public WeightVectorNeighborhood(int numberOfWeightVectors, int neighborSize) {
     this.numberOfWeightVectors = numberOfWeightVectors;
     this.weightVectorSize = 2;
-    this.neighborhoodSize = neighborhoodSize;
+    this.neighborSize = neighborSize;
 
-    this.neighborhood = new int[numberOfWeightVectors][neighborhoodSize];
+    this.neighborhood = new int[numberOfWeightVectors][neighborSize];
     this.weightVector = new double[numberOfWeightVectors][weightVectorSize];
 
     for (int n = 0; n < numberOfWeightVectors; n++) {
@@ -40,33 +43,30 @@ public class WeightVectorNeighborhood<S extends Solution<?>> implements Neighbor
     initializeNeighborhood();
   }
 
-  public WeightVectorNeighborhood(
-      int numberOfWeightVectors, int weightVectorSize, int neighborhoodSize, String vectorDirectoryName)
-      throws FileNotFoundException {
+  public WeightVectorNeighborhood(int numberOfWeightVectors, int weightVectorSize, int neighborSize, String vectorFileName) throws FileNotFoundException {
     this.numberOfWeightVectors = numberOfWeightVectors;
     this.weightVectorSize = weightVectorSize;
-    this.neighborhoodSize = neighborhoodSize;
+    this.neighborSize = neighborSize;
 
-
-
-    this.neighborhood = new int[numberOfWeightVectors][neighborhoodSize];
+    this.neighborhood = new int[numberOfWeightVectors][neighborSize];
     this.weightVector = new double[numberOfWeightVectors][weightVectorSize];
 
-    String weightVectorFileName = vectorDirectoryName + "/W"+weightVectorSize+"D_" + numberOfWeightVectors +".dat" ;
-    readWeightsFromFile(weightVectorFileName) ;
+    readWeightsFromFile(vectorFileName);
 
     initializeNeighborhood();
   }
 
   private void readWeightsFromFile(String vectorFileName) throws FileNotFoundException {
+    //try {
     InputStream inputStream;
     inputStream = getClass().getResourceAsStream(vectorFileName);
     if (null == inputStream) {
       inputStream = new FileInputStream(vectorFileName);
     }
     InputStreamReader isr = new InputStreamReader(inputStream);
+    BufferedReader br = new BufferedReader(isr);
 
-    try (BufferedReader br = new BufferedReader(isr)) {
+    try {
       int i = 0;
       int j;
       String aux = br.readLine();
@@ -74,17 +74,19 @@ public class WeightVectorNeighborhood<S extends Solution<?>> implements Neighbor
         StringTokenizer st = new StringTokenizer(aux);
         j = 0;
         while (st.hasMoreTokens()) {
-          double value = Double.valueOf(st.nextToken());
+          double value = new Double(st.nextToken());
           weightVector[i][j] = value;
           j++;
         }
         aux = br.readLine();
         i++;
       }
+      br.close();
     } catch (IOException e) {
-      throw new JMetalException(
-          "readWeightsFromFile: failed when reading for file: " + vectorFileName, e);
+      throw new JMetalException("readWeightsFromFile: failed when reading for file: "
+              + vectorFileName, e);
     }
+
   }
 
   private void initializeNeighborhood() {
@@ -100,9 +102,9 @@ public class WeightVectorNeighborhood<S extends Solution<?>> implements Neighbor
       }
 
       // find 'niche' nearest neighboring subproblems
-      minFastSort(x, idx, numberOfWeightVectors, neighborhoodSize);
+      minFastSort(x, idx, numberOfWeightVectors, neighborSize);
 
-      System.arraycopy(idx, 0, neighborhood[i], 0, neighborhoodSize);
+      System.arraycopy(idx, 0, neighborhood[i], 0, neighborSize);
     }
   }
 
@@ -147,7 +149,7 @@ public class WeightVectorNeighborhood<S extends Solution<?>> implements Neighbor
     return weightVector;
   }
 
-  public int neighborhoodSize() {
-    return neighborhoodSize;
+  public int getNeighborSize() {
+    return neighborSize;
   }
 }

@@ -1,7 +1,6 @@
 package org.uma.jmetal.problem.multiobjective.wfg;
 
-import org.uma.jmetal.solution.doublesolution.DoubleSolution;
-import org.uma.jmetal.util.errorchecking.JMetalException;
+import org.uma.jmetal.solution.DoubleSolution;
 
 /**
  * This class implements the WFG6 problem
@@ -105,14 +104,14 @@ public class WFG6 extends WFG {
    * Evaluates a solution
    *
    * @param solution The solution to runAlgorithm
-   * @throws JMetalException
+   * @throws org.uma.jmetal.util.JMetalException
    */
-  public DoubleSolution evaluate(DoubleSolution solution) {
+  public void evaluate(DoubleSolution solution) {
     float[] variables = new float[getNumberOfVariables()];
     double[] x = new double[getNumberOfVariables()];
 
     for (int i = 0; i < getNumberOfVariables(); i++) {
-      x[i] = solution.variables().get(i);
+      x[i] = solution.getVariableValue(i);
     }
 
     for (int i = 0; i < getNumberOfVariables(); i++) {
@@ -122,8 +121,7 @@ public class WFG6 extends WFG {
     float[] sol2 = evaluate(variables);
 
     for (int i = 0; i < sol2.length; i++) {
-      solution.objectives()[i] = sol2[i];
+      solution.setObjective(i, sol2[i]);
     }
-    return solution ;
   }
 }

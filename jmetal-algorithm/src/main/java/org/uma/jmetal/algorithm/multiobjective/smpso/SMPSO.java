@@ -1,11 +1,10 @@
 package org.uma.jmetal.algorithm.multiobjective.smpso;
 
 import org.uma.jmetal.algorithm.impl.AbstractParticleSwarmOptimization;
-import org.uma.jmetal.operator.mutation.MutationOperator;
-import org.uma.jmetal.problem.doubleproblem.DoubleProblem;
-import org.uma.jmetal.solution.doublesolution.DoubleSolution;
+import org.uma.jmetal.operator.MutationOperator;
+import org.uma.jmetal.problem.DoubleProblem;
+import org.uma.jmetal.solution.DoubleSolution;
 import org.uma.jmetal.util.archive.BoundedArchive;
-import org.uma.jmetal.util.bounds.Bounds;
 import org.uma.jmetal.util.comparator.DominanceComparator;
 import org.uma.jmetal.util.evaluator.SolutionListEvaluator;
 import org.uma.jmetal.util.pseudorandom.JMetalRandom;
@@ -95,8 +94,7 @@ public class SMPSO extends AbstractParticleSwarmOptimization<DoubleSolution, Lis
     deltaMax = new double[problem.getNumberOfVariables()];
     deltaMin = new double[problem.getNumberOfVariables()];
     for (int i = 0; i < problem.getNumberOfVariables(); i++) {
-      Bounds<Double> bounds = problem.getBoundsForVariables().get(i) ;
-      deltaMax[i] = (bounds.getUpperBound() - bounds.getLowerBound()) / 2.0;
+      deltaMax[i] = (problem.getUpperBound(i) - problem.getLowerBound(i)) / 2.0;
       deltaMin[i] = -deltaMax[i];
     }
   }
@@ -184,11 +182,11 @@ public class SMPSO extends AbstractParticleSwarmOptimization<DoubleSolution, Lis
       wmax = weightMax;
       wmin = weightMin;
 
-      for (int var = 0; var < particle.variables().size(); var++) {
+      for (int var = 0; var < particle.getNumberOfVariables(); var++) {
         speed[i][var] = velocityConstriction(constrictionCoefficient(c1, c2) * (
                         inertiaWeight(iterations, maxIterations, wmax, wmin) * speed[i][var] +
-                                c1 * r1 * (bestParticle.variables().get(var) - particle.variables().get(var)) +
-                                c2 * r2 * (bestGlobal.variables().get(var) - particle.variables().get(var))),
+                                c1 * r1 * (bestParticle.getVariableValue(var) - particle.getVariableValue(var)) +
+                                c2 * r2 * (bestGlobal.getVariableValue(var) - particle.getVariableValue(var))),
                 deltaMax, deltaMin, var);
       }
     }
@@ -198,18 +196,15 @@ public class SMPSO extends AbstractParticleSwarmOptimization<DoubleSolution, Lis
   protected void updatePosition(List<DoubleSolution> swarm) {
     for (int i = 0; i < swarmSize; i++) {
       DoubleSolution particle = swarm.get(i);
-      for (int j = 0; j < particle.variables().size(); j++) {
-        particle.variables().set(j, particle.variables().get(j) + speed[i][j]);
+      for (int j = 0; j < particle.getNumberOfVariables(); j++) {
+        particle.setVariableValue(j, particle.getVariableValue(j) + speed[i][j]);
 
-        Bounds<Double> bounds = problem.getBoundsForVariables().get(j) ;
-        Double lowerBound = bounds.getLowerBound() ;
-        Double upperBound = bounds.getUpperBound() ;
-        if (particle.variables().get(j) < lowerBound) {
-          particle.variables().set(j, lowerBound);
+        if (particle.getVariableValue(j) < problem.getLowerBound(j)) {
+          particle.setVariableValue(j, problem.getLowerBound(j));
           speed[i][j] = speed[i][j] * changeVelocity1;
         }
-        if (particle.variables().get(j) > upperBound) {
-          particle.variables().set(j, upperBound);
+        if (particle.getVariableValue(j) > problem.getUpperBound(j)) {
+          particle.setVariableValue(j, problem.getUpperBound(j));
           speed[i][j] = speed[i][j] * changeVelocity2;
         }
       }
@@ -285,7 +280,7 @@ public class SMPSO extends AbstractParticleSwarmOptimization<DoubleSolution, Lis
     return result;
   }
 
-  protected double constrictionCoefficient(double c1, double c2) {
+  private double constrictionCoefficient(double c1, double c2) {
     double rho = c1 + c2;
     if (rho <= 4) {
       return 1.0;

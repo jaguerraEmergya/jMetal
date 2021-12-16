@@ -1,7 +1,7 @@
 package org.uma.jmetal.problem.multiobjective.mop;
 
-import org.uma.jmetal.problem.doubleproblem.impl.AbstractDoubleProblem;
-import org.uma.jmetal.solution.doublesolution.DoubleSolution;
+import org.uma.jmetal.problem.impl.AbstractDoubleProblem;
+import org.uma.jmetal.solution.DoubleSolution;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -41,22 +41,22 @@ public class MOP6 extends AbstractDoubleProblem {
       upperLimit.add(1.0);
     }
 
-    setVariableBounds(lowerLimit, upperLimit);
+    setLowerLimit(lowerLimit);
+    setUpperLimit(upperLimit);
   }
 
   /** Evaluate() method */
-  public DoubleSolution evaluate(DoubleSolution solution) {
-    double[] f = new double[solution.objectives().length];
+  public void evaluate(DoubleSolution solution) {
+    double[] f = new double[getNumberOfObjectives()];
 
     double g = this.evalG(solution);
-    f[0] = (1 + g) * solution.variables().get(0) * solution.variables().get(1);
-    f[1] = (1 + g) * solution.variables().get(0) * (1 - solution.variables().get(1));
-    f[2] = (1 + g) * (1 - solution.variables().get(0));
+    f[0] = (1 + g) * solution.getVariableValue(0) * solution.getVariableValue(1);
+    f[1] = (1 + g) * solution.getVariableValue(0) * (1 - solution.getVariableValue(1));
+    f[2] = (1 + g) * (1 - solution.getVariableValue(0));
 
-    solution.objectives()[0] = f[0];
-    solution.objectives()[1] = f[1];
-    solution.objectives()[2] = f[2];
-    return solution ;
+    solution.setObjective(0, f[0]);
+    solution.setObjective(1, f[1]);
+    solution.setObjective(2, f[2]);
   }
 
   /**
@@ -66,11 +66,11 @@ public class MOP6 extends AbstractDoubleProblem {
    */
   private double evalG(DoubleSolution solution) {
     double g = 0.0;
-    for (int i = 2; i < solution.variables().size(); i++) {
-      double t = solution.variables().get(i) - solution.variables().get(0) * solution.variables().get(1);
+    for (int i = 2; i < solution.getNumberOfVariables(); i++) {
+      double t = solution.getVariableValue(i) - solution.getVariableValue(0) * solution.getVariableValue(1);
       g += -0.9 * t * t + Math.pow(Math.abs(t), 0.6);
     }
-    g = 2 * Math.sin(Math.PI * solution.variables().get(0)) * g;
+    g = 2 * Math.sin(Math.PI * solution.getVariableValue(0)) * g;
     return g;
   }
 

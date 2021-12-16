@@ -1,15 +1,13 @@
 package org.uma.jmetal.problem.multiobjective.maf;
 
-import org.uma.jmetal.problem.doubleproblem.impl.AbstractDoubleProblem;
-import org.uma.jmetal.solution.doublesolution.DoubleSolution;
-
 import java.util.ArrayList;
 import java.util.List;
+import org.uma.jmetal.problem.impl.AbstractDoubleProblem;
+import org.uma.jmetal.solution.DoubleSolution;
 
 /**
  * Class representing problem MaF13
  */
-@SuppressWarnings("serial")
 public class MaF13 extends AbstractDoubleProblem {
 
   /**
@@ -43,7 +41,8 @@ public class MaF13 extends AbstractDoubleProblem {
         upper.add(2.0);
     } //for
 
-    setVariableBounds(lower, upper);
+    setLowerLimit(lower);
+    setUpperLimit(upper);
   }
 
   /**
@@ -52,16 +51,16 @@ public class MaF13 extends AbstractDoubleProblem {
    * @param solution The solution to evaluate
    */
   @Override
-  public DoubleSolution evaluate(DoubleSolution solution) {
+  public void evaluate(DoubleSolution solution) {
 
-    int numberOfVariables_ = solution.variables().size();
-    int numberOfObjectives_ = solution.objectives().length;
+    int numberOfVariables_ = solution.getNumberOfVariables();
+    int numberOfObjectives_ = solution.getNumberOfObjectives();
 
     double[] x = new double[numberOfVariables_];
     double[] f = new double[numberOfObjectives_];
 
     for (int i = 0; i < numberOfVariables_; i++) {
-      x[i] = solution.variables().get(i);
+      x[i] = solution.getVariableValue(i);
     }
 
     // evaluate J,y,sub1,sub2,sub3,sub4
@@ -104,8 +103,7 @@ public class MaF13 extends AbstractDoubleProblem {
     }
 
     for (int i = 0; i < numberOfObjectives_; i++) {
-      solution.objectives()[i] = f[i];
+      solution.setObjective(i, f[i]);
     }
-    return solution ;
   }
 }

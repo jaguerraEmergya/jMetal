@@ -1,7 +1,7 @@
 package org.uma.jmetal.problem.multiobjective.UF;
 
-import org.uma.jmetal.problem.doubleproblem.impl.AbstractDoubleProblem;
-import org.uma.jmetal.solution.doublesolution.DoubleSolution;
+import org.uma.jmetal.problem.impl.AbstractDoubleProblem;
+import org.uma.jmetal.solution.DoubleSolution;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -38,15 +38,16 @@ public class UF3 extends AbstractDoubleProblem {
       upperLimit.add(1.0);
     }
 
-    setVariableBounds(lowerLimit, upperLimit);
+    setLowerLimit(lowerLimit);
+    setUpperLimit(upperLimit);
   }
 
   /** Evaluate() method */
   @Override
-  public DoubleSolution evaluate(DoubleSolution solution) {
+  public void evaluate(DoubleSolution solution) {
     double[] x = new double[getNumberOfVariables()];
-    for (int i = 0; i < solution.variables().size(); i++) {
-      x[i] = solution.variables().get(i) ;
+    for (int i = 0; i < solution.getNumberOfVariables(); i++) {
+      x[i] = solution.getVariableValue(i) ;
     }
 
 
@@ -71,9 +72,7 @@ public class UF3 extends AbstractDoubleProblem {
 			}
     }
     
-    solution.objectives()[0] = x[0] + 2.0*(4.0*sum1 - 2.0*prod1 + 2.0) / (double)count1;
-    solution.objectives()[1] = 1.0 - Math.sqrt(x[0]) + 2.0*(4.0*sum2 - 2.0*prod2 + 2.0) / (double)count2;
-
-    return solution ;
+    solution.setObjective(0,  x[0] + 2.0*(4.0*sum1 - 2.0*prod1 + 2.0) / (double)count1);
+    solution.setObjective(1, 1.0 - Math.sqrt(x[0]) + 2.0*(4.0*sum2 - 2.0*prod2 + 2.0) / (double)count2);
   }
 }

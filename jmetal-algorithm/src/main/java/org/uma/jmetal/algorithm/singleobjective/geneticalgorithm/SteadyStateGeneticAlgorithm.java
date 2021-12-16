@@ -1,9 +1,9 @@
 package org.uma.jmetal.algorithm.singleobjective.geneticalgorithm;
 
 import org.uma.jmetal.algorithm.impl.AbstractGeneticAlgorithm;
-import org.uma.jmetal.operator.crossover.CrossoverOperator;
-import org.uma.jmetal.operator.mutation.MutationOperator;
-import org.uma.jmetal.operator.selection.SelectionOperator;
+import org.uma.jmetal.operator.CrossoverOperator;
+import org.uma.jmetal.operator.MutationOperator;
+import org.uma.jmetal.operator.SelectionOperator;
 import org.uma.jmetal.problem.Problem;
 import org.uma.jmetal.solution.Solution;
 import org.uma.jmetal.util.comparator.ObjectiveComparator;
@@ -26,8 +26,8 @@ public class SteadyStateGeneticAlgorithm<S extends Solution<?>> extends Abstract
    * Constructor
    */
   public SteadyStateGeneticAlgorithm(Problem<S> problem, int maxEvaluations, int populationSize,
-                                     CrossoverOperator<S> crossoverOperator, MutationOperator<S> mutationOperator,
-                                     SelectionOperator<List<S>, S> selectionOperator) {
+      CrossoverOperator<S> crossoverOperator, MutationOperator<S> mutationOperator,
+      SelectionOperator<List<S>, S> selectionOperator) {
     super(problem);
     setMaxPopulationSize(populationSize);
     this.maxEvaluations = maxEvaluations;
@@ -44,7 +44,7 @@ public class SteadyStateGeneticAlgorithm<S extends Solution<?>> extends Abstract
   }
 
   @Override protected List<S> replacement(List<S> population, List<S> offspringPopulation) {
-    population.sort(comparator);
+    Collections.sort(population, comparator) ;
     int worstSolutionIndex = population.size() - 1;
     if (comparator.compare(population.get(worstSolutionIndex), offspringPopulation.get(0)) > 0) {
       population.remove(worstSolutionIndex);
@@ -87,12 +87,12 @@ public class SteadyStateGeneticAlgorithm<S extends Solution<?>> extends Abstract
   }
 
   @Override public S getResult() {
-    getPopulation().sort(comparator);
+    Collections.sort(getPopulation(), comparator) ;
     return getPopulation().get(0);
   }
 
   @Override public void initProgress() {
-    evaluations = getMaxPopulationSize();
+    evaluations = 1;
   }
 
   @Override public void updateProgress() {

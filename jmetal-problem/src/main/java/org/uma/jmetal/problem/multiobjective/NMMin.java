@@ -1,15 +1,14 @@
 package org.uma.jmetal.problem.multiobjective;
 
-import org.uma.jmetal.problem.integerproblem.impl.AbstractIntegerProblem;
-import org.uma.jmetal.solution.integersolution.IntegerSolution;
-import org.uma.jmetal.solution.integersolution.impl.DefaultIntegerSolution;
+import org.uma.jmetal.problem.impl.AbstractIntegerProblem;
+import org.uma.jmetal.solution.IntegerSolution;
 
 import java.util.ArrayList;
 import java.util.List;
 
 /**
  * Created by Antonio J. Nebro on 03/07/14.
- * Bi-objective problem for testing class {@link DefaultIntegerSolution )}, e.g., integer encoding.
+ * Bi-objective problem for testing integer encoding.
  * Objective 1: minimizing the distance to value N
  * Objective 2: minimizing the distance to value M
  */
@@ -19,7 +18,7 @@ public class NMMin extends AbstractIntegerProblem {
   private int valueM ;
 
   public NMMin() {
-    this(20, 100, -100, -1000, +1000);
+    this(10, 100, -100, -1000, +1000);
   }
 
   /** Constructor */
@@ -38,27 +37,26 @@ public class NMMin extends AbstractIntegerProblem {
       upperLimit.add(upperBound);
     }
 
-    setVariableBounds(lowerLimit, upperLimit);
+    setLowerLimit(lowerLimit);
+    setUpperLimit(upperLimit);
   }
 
   /** Evaluate() method */
   @Override
-  public IntegerSolution evaluate(IntegerSolution solution) {
+  public void evaluate(IntegerSolution solution) {
     int approximationToN;
     int approximationToM ;
 
     approximationToN = 0;
     approximationToM = 0;
 
-    for (int i = 0; i < solution.variables().size(); i++) {
-      int value = solution.variables().get(i) ;
+    for (int i = 0; i < solution.getNumberOfVariables(); i++) {
+      int value = solution.getVariableValue(i) ;
       approximationToN += Math.abs(valueN - value) ;
       approximationToM += Math.abs(valueM - value) ;
     }
 
-    solution.objectives()[0] = approximationToN;
-    solution.objectives()[1] = approximationToM;
-
-    return solution ;
+    solution.setObjective(0, approximationToN);
+    solution.setObjective(1, approximationToM);
   }
 }

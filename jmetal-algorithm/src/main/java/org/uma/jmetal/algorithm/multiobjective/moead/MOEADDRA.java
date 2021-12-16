@@ -1,11 +1,12 @@
 package org.uma.jmetal.algorithm.multiobjective.moead;
 
-import org.uma.jmetal.operator.crossover.CrossoverOperator;
-import org.uma.jmetal.operator.crossover.impl.DifferentialEvolutionCrossover;
-import org.uma.jmetal.operator.mutation.MutationOperator;
+import org.uma.jmetal.algorithm.multiobjective.moead.util.MOEADUtils;
+import org.uma.jmetal.operator.CrossoverOperator;
+import org.uma.jmetal.operator.MutationOperator;
+import org.uma.jmetal.operator.impl.crossover.DifferentialEvolutionCrossover;
 import org.uma.jmetal.problem.Problem;
-import org.uma.jmetal.solution.doublesolution.DoubleSolution;
-import org.uma.jmetal.util.errorchecking.JMetalException;
+import org.uma.jmetal.solution.DoubleSolution;
+import org.uma.jmetal.util.JMetalException;
 import org.uma.jmetal.util.pseudorandom.JMetalRandom;
 
 import java.util.ArrayList;
@@ -32,9 +33,9 @@ public class MOEADDRA extends AbstractMOEAD<DoubleSolution> {
   JMetalRandom randomGenerator ;
 
   public MOEADDRA(Problem<DoubleSolution> problem, int populationSize, int resultPopulationSize, int maxEvaluations,
-                  MutationOperator<DoubleSolution> mutation, CrossoverOperator<DoubleSolution> crossover, FunctionType functionType,
-                  String dataDirectory, double neighborhoodSelectionProbability,
-                  int maximumNumberOfReplacedSolutions, int neighborSize) {
+      MutationOperator<DoubleSolution> mutation, CrossoverOperator<DoubleSolution> crossover, FunctionType functionType,
+      String dataDirectory, double neighborhoodSelectionProbability,
+      int maximumNumberOfReplacedSolutions, int neighborSize) {
     super(problem, populationSize, resultPopulationSize, maxEvaluations, crossover, mutation, functionType,
         dataDirectory, neighborhoodSelectionProbability, maximumNumberOfReplacedSolutions,
         neighborSize);
@@ -56,14 +57,16 @@ public class MOEADDRA extends AbstractMOEAD<DoubleSolution> {
     initializePopulation() ;
     initializeUniformWeight();
     initializeNeighborhood();
-    idealPoint.update(population); ;
+    initializeIdealPoint() ;
 
     int generation = 0 ;
     evaluations = populationSize ;
     do {
-      List<Integer> order = tourSelection(10) ;
-      for (int i = 0; i < order.size(); i++) {
-        int subProblemId = order.get(i);
+      int[] permutation = new int[populationSize];
+      MOEADUtils.randomPermutation(permutation, populationSize);
+
+      for (int i = 0; i < populationSize; i++) {
+        int subProblemId = permutation[i];
         frequency[subProblemId]++;
 
         NeighborType neighborType = chooseNeighborType() ;
@@ -78,7 +81,7 @@ public class MOEADDRA extends AbstractMOEAD<DoubleSolution> {
 
         evaluations++;
 
-        idealPoint.update(child.objectives());
+        updateIdealPoint(child);
         updateNeighborhood(child, subProblemId, neighborType);
       }
 
